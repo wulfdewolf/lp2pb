@@ -7,7 +7,7 @@
 */
 #include <iostream>
 #include <algorithm>
-#include "include/parse_and_translate.h"
+#include "include/parse.h"
 using namespace std;
 
 char* getCmdOption(char ** begin, char ** end, const std::string & option) {
@@ -28,7 +28,10 @@ int main(int argc, char* argv[]) {
         cout << "Usage: ./lp2pb inputfile1 inputfile2 ..." << endl;
 
     } else {
-        int test = parse_and_translate(argv+1, argc-1);
+
+        Parser parser;
+
+        int test = parser.parse(argv+1, argc-1);
     }
 
     return 0;
