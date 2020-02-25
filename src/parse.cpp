@@ -15,7 +15,6 @@ int Parser::parse(char* files[], int nfiles) {
     return 0;
 }
 
-
 // Parses the rules of the input file
 int Parser::parse_rules(ifstream &infile) {
 
@@ -23,19 +22,26 @@ int Parser::parse_rules(ifstream &infile) {
     int highest = 0;
     string line;
 
+    // Specific rule parts
+    int head;
+    int literals_body;
+    int negative_body;
+
     while(getline(infile, line)) {
         istringstream iss(line);
 
         iss>>curr;
         cout << "Curr rule type= " << curr << '\n';
-        if(curr == 0) {
-            break;
-        } else {
-
-            while(iss>>curr) {
-                cout << curr << '\n';
-                highest = max(curr, highest);
-            }
+        
+        switch(curr) {
+            case ZERO_RULE: 
+                return highest;
+            case BASIC:
+            case CONSTRAINT:
+            case CHOICE:
+            case WEIGHT:
+            case MINIMIZE:
+                5;
         }
     }
     return highest;
@@ -56,7 +62,7 @@ void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highe
                 istringstream iss(line);
                 iss>>curr;
                 iss>>curr_symbol;
-                if(curr == 0) break;
+                if(curr == ZERO_RULE) break;
             } else break;
         }
 

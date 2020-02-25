@@ -9,7 +9,7 @@
 using namespace std;
 
 // RULE CATEGORIES (smodels)
-enum class rule_type{ ZERO_RULE, BASIC, CONSTRAINT, CHOICE, TTTTT, WEIGHT, MINIMIZE};
+enum rule_type{ ZERO_RULE, BASIC, CONSTRAINT, CHOICE, TTTTT, WEIGHT, MINIMIZE};
 
 // PARSER CLASS
 class Parser {
@@ -25,7 +25,7 @@ class Parser {
 
     void parse_symbol_table(ifstream &infile, char symbol_table[], int highest);
 
-    int parse_compute();
+    int parse_compute(ifstream &infile);
 
     public: 
 
