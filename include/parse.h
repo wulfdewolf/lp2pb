@@ -11,9 +11,6 @@ using namespace std;
 // RULE CATEGORIES (smodels)
 enum class rule_type{ ZERO_RULE, BASIC, CONSTRAINT, CHOICE, TTTTT, WEIGHT, MINIMIZE};
 
-// PARSING STATUS
-enum class parse_status{ RULES_DONE};
-
 // PARSER CLASS
 class Parser {
 
