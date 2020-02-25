@@ -56,12 +56,11 @@ void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highe
                 istringstream iss(line);
                 iss>>curr;
                 iss>>curr_symbol;
+                if(curr == 0) break;
             } else break;
         }
 
-        if(curr == 0){
-            break;
-        } else if(curr == i + 1) {
+        if(curr == i + 1) {
             symbol_table[i] = curr_symbol;
             was_hidden = false;
         } else {
