@@ -1,29 +1,47 @@
 /*
-*   Parsing input files, create rule streams 
-*
-*
-*
+*   Parsing input files
 */
 #include "../include/parse.h"
 
 int Parser::parse(char* files[], int nfiles) {
 
-        for(int i=0; i < nfiles; i++) {
+    // Parse each file separately
+    for(int i=0; i < nfiles; i++) {
 
-            // Print out current file
-            cout << "Current file: " << files[i] << endl;
+        // Print out current file name
+        cout << "Current file: " << files[i] << endl;
+        int status = parse_file(files[i]);
+    }
+    return 0;
+}
 
-            std::ifstream infile(files[i]);
-            std::string line;
+int Parser::get_rule_type(std::string line){
+    return line[0];
+}
 
-            int curr;
+int Parser::parse_file(char* file) {
 
-            while(std::getline(infile, line)) {
-                std::istringstream iss(line);
-                while(iss>>curr) {
-                    cout << curr << endl;
-                }
-            }
+    std::ifstream infile(file);
+    std::string line;
+    
+    int curr;
+    int curr_type;
+
+    while(std::getline(infile, line)) {
+        std::istringstream iss(line);
+
+        // First parse all the rules
+        while(iss>>curr && line != "0") {
+            curr_type = get_rule_type(line);
+            cout << curr << endl;
+            cout << curr_type << endl;
         }
-            return 0;
+
+        // Then parse the meta data
+
+        // Parse the symbol table
+
+        // Parse the compute statements
+    }
+    return 0;
 }

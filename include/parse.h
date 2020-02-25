@@ -11,6 +11,9 @@ using namespace std;
 // RULE CATEGORIES (smodels)
 enum class rule_type{ ZERO_RULE, BASIC, CONSTRAINT, CHOICE, TTTTT, WEIGHT, MINIMIZE};
 
+// PARSING STATUS
+enum class parse_status{ RULES_DONE};
+
 // PARSER CLASS
 class Parser {
 
@@ -29,7 +32,7 @@ class Parser {
 
     int read_neg_compute();
 
-    rule_type get_rule_type(std::istringstream line);
+    int get_rule_type(std::string line);
 
 
     public: 
