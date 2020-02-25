@@ -15,16 +15,14 @@ int Parser::parse(char* files[], int nfiles) {
     return 0;
 }
 
-// Parses one file, completely
-int Parser::parse_file(char* file) {
 
-    ifstream infile(file);
-    string line;
-    
+// Parses the rules of the input file
+int Parser::parse_rules(ifstream &infile) {
+
     int curr;
-    int highest;
+    int highest = 0;
+    string line;
 
-    // First parse all rules
     while(getline(infile, line)) {
         istringstream iss(line);
 
@@ -40,11 +38,16 @@ int Parser::parse_file(char* file) {
             }
         }
     }
+    return highest;
+}
 
-    // Parse symbol table
+// Parses the symbol table
+void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highest) {
+
+    int curr;
     char curr_symbol;
-    char symboltable[highest];
     bool was_hidden = false;
+    string line;
 
     for(int i = 0; i < highest; i++){
 
@@ -59,13 +62,28 @@ int Parser::parse_file(char* file) {
         if(curr == 0){
             break;
         } else if(curr == i + 1) {
-            symboltable[i] = curr_symbol;
+            symbol_table[i] = curr_symbol;
             was_hidden = false;
         } else {
-            symboltable[i] = '/';
+            symbol_table[i] = '/';
             was_hidden = true;
         }
     }
+}
+
+// Parses one file, completely
+int Parser::parse_file(char* file) {
+
+    // Create stream from given filename
+    ifstream infile(file);
+    
+    // Parse the rules
+    int highest = parse_rules(infile);
+
+    // Parse symbol table
+    char symboltable[highest];
+    parse_symbol_table(infile, symboltable, highest);
+  
 
     for(int i = 0; i < highest; i++) {
         cout << "value: " << i+1 << " has symbol: " << symboltable[i] << '\n';

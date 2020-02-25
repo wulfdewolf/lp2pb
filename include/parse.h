@@ -21,16 +21,11 @@ class Parser {
 
     int parse_file(char* file);
 
-    int read_symbol_table();
+    int parse_rules(ifstream &infile);
 
-    int read_compute();
+    void parse_symbol_table(ifstream &infile, char symbol_table[], int highest);
 
-    int read_pos_compute();
-
-    int read_neg_compute();
-
-    int get_rule_type(std::string line);
-
+    int parse_compute();
 
     public: 
 
