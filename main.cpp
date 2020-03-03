@@ -8,6 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include "include/parse.h"
+#include "include/translate.h"
 using namespace std;
 
 char* getCmdOption(char ** begin, char ** end, const std::string & option) {
@@ -30,8 +31,9 @@ int main(int argc, char* argv[]) {
     } else {
 
         Parser parser;
+        Translator translator;
 
-        int test = parser.parse(argv+1, argc-1);
+        int test = parser.parse(argv+1, argc-1, translator);
     }
 
     return 0;

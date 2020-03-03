@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 
+#include "translate.h"
+
 using namespace std;
 
 // RULE CATEGORIES (smodels)
@@ -19,17 +21,17 @@ class Parser {
     int amount_of_variables = 0;
     int amount_of_contraints = 0;
 
-    int parse_file(char* file);
+    int parse_file(char* file, Translator translator);
 
-    int parse_rules(ifstream &infile);
+    void parse_rules(ifstream &infile, Translator translator);
 
     void parse_symbol_table(ifstream &infile, char symbol_table[], int highest);
 
-    int parse_compute(ifstream &infile);
+    int parse_compute(ifstream &infile, bool values[]);
 
     public: 
 
-    int parse(char* files[], int nfiles);
+    int parse(char* files[], int nfiles, Translator translator);
 
 };
 

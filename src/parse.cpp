@@ -3,23 +3,59 @@
 */
 #include "../include/parse.h"
 
-int Parser::parse(char* files[], int nfiles) {
+// Parses each file in a given array of filenames
+int Parser::parse(char* files[], int nfiles, Translator translator) {
+
+    int status; 
 
     // Parse each file separately
     for(int i=0; i < nfiles; i++) {
 
         // Print out current file name
         cout << "Current file: " << files[i] << '\n';
-        int status = parse_file(files[i]);
+        status = parse_file(files[i], translator);
     }
+    return status;
+}
+
+// Parses one file completely
+int Parser::parse_file(char* file, Translator translator) {
+
+    // Create stream from given filename
+    ifstream infile(file);
+    
+    // Parse the rules
+    parse_rules(infile, translator);
+    int highest = 3; //translator::highest;
+
+    // Parse symbol table
+    char symboltable[highest];
+    parse_symbol_table(infile, symboltable, highest);
+  
+    // Print symbol table (DEBUG)
+    for(int i = 0; i < highest; i++) {
+        cout << "idx: " << i+1 << " has symbol: " << symboltable[i] << '\n';
+    }
+
+    // Parse compute statements
+    bool values[highest] = { false };
+    int amount_of_models = parse_compute(infile, values);
+
+    // Print svalues (DEBUG)
+    for(int i = 0; i < highest; i++) {
+        cout << "idx: " << i+1 << " has value: " << values[i] << '\n';
+    }
+    cout << "Amount of models to calculate: " << amount_of_models << '\n';
+
+    // Close the file
+    infile.close();
     return 0;
 }
 
-// Parses the rules of the input file
-int Parser::parse_rules(ifstream &infile) {
+// Parses the rules
+void Parser::parse_rules(ifstream &infile, Translator translator) {
 
     int curr;
-    int highest = 0;
     string line;
 
     // Specific rule parts
@@ -32,19 +68,24 @@ int Parser::parse_rules(ifstream &infile) {
 
         iss>>curr;
         cout << "Curr rule type= " << curr << '\n';
+        if(curr == ZERO_RULE) return;
         
-        switch(curr) {
+        /*switch(curr) {
             case ZERO_RULE: 
-                return highest;
+                return;
             case BASIC:
+                translator::translate_basic(line);
             case CONSTRAINT:
+                translator::translate_constraint(line);
             case CHOICE:
+                translator::translate_choice(line);
             case WEIGHT:
+                translator::translate_weight(line);
             case MINIMIZE:
-                5;
-        }
+                translator::translate_min_max(line);
+        }*/
     }
-    return highest;
+    return;
 }
 
 // Parses the symbol table
@@ -55,7 +96,7 @@ void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highe
     bool was_hidden = false;
     string line;
 
-    for(int i = 0; i < highest; i++){
+    for(int i = 0; ; i++){
 
         if(!was_hidden){
             if(getline(infile, line)) {
@@ -76,27 +117,37 @@ void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highe
     }
 }
 
-// Parses one file, completely
-int Parser::parse_file(char* file) {
+// Parses the compute statements
+int Parser::parse_compute(ifstream &infile, bool values[]) {
 
-    // Create stream from given filename
-    ifstream infile(file);
-    
-    // Parse the rules
-    int highest = parse_rules(infile);
+    int curr;
+    string line;
 
-    // Parse symbol table
-    char symboltable[highest];
-    parse_symbol_table(infile, symboltable, highest);
-  
+    // Skip the 'B+'
+    getline(infile, line);
 
-    for(int i = 0; i < highest; i++) {
-        cout << "value: " << i+1 << " has symbol: " << symboltable[i] << '\n';
+    // Get the positives
+    while(getline(infile, line)) {
+        istringstream iss(line);
+        iss>>curr;
+        if(curr == ZERO_RULE) {
+            break;
+        } else {
+            values[curr-1] = true;
+        }
     }
 
-    // Parse compute statements
+    // Skip the negatives part
+    while(getline(infile, line)) {
+        istringstream iss(line);
+        if(curr == ZERO_RULE) {
+            break;
+        }
+    }
 
-    // Close the file
-    infile.close();
-    return 0;
+    // Get the amount of models to be calculated
+    getline(infile, line);
+    istringstream iss(line);
+    iss>>curr;
+    return curr;
 }

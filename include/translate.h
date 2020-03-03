@@ -13,11 +13,18 @@ class Translator {
 
     private:
 
-    int amount_of_variables = 0;
-    int amount_of_contraints = 0;
-
 
     public: 
+
+    int highest = 0;
+
+    int to_sat(string line);
+
+    void translate_basic(string line);
+    void translate_constraint(string line);
+    void translate_choice(string line);
+    void translate_weight(string line);
+    void translate_min_max(string line);
 
 };
 
