@@ -7,12 +7,48 @@
 *   
 */
 #include "../include/translate.h"
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
 
 //-----------------------------------------------------------------------------
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
+void Translator::translate_sat() {
 
-void Translator::translate_basic(istringstream &iss) {
+}
+
+void Translator::translate_values() {
+
+    // Loop over all parsed values and add the corresponding constraints
+    for(int i = 0; i < highest; i++) {
+        switch(this->values[i]) {
+            case 0: 
+                this->constraints << 'x' << i << " < " << 1 << " ;" << '\n';
+                this->amount_of_constraints++;
+                break;
+            case 1: 
+                this->constraints << 'x' << i << " >= " << 1 << " ;" << '\n';
+                this->amount_of_constraints++;
+                break;
+            case 2:
+                break;
+        }
+    }
+
+    // DEBUG --------------- Display current constraints
+    while(this->constraints.rdbuf()->in_avail() != 0){
+        string line;
+        getline(this->constraints, line);
+        cout << line << '\n';
+    }
+    // DEBUG ---------------
+}
+
+void Translator::translate_basic(istringstream &iss, string line) {
 
 
     // DEBUG --------------- Just to get the maximum
@@ -23,8 +59,9 @@ void Translator::translate_basic(istringstream &iss) {
         this->highest = max(this->highest, curr);
     }
     // DEBUG ---------------
+    
 
-    // TODO: add call to lp2sat and translation of returned SAT
+    // TODO: translation code
 
     return;
 }
@@ -157,4 +194,17 @@ void Translator::read_literals(int array[], int amount, istringstream &iss) {
         iss>>array[i];
         this->highest = max(this->highest, array[i]);
     }
+}
+
+string Translator::exec(string cmd) {
+        array<char, 128> buffer;
+        string result;
+        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+        if (!pipe) {
+            throw runtime_error("popen() failed!");
+        }
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+            result += buffer.data();
+        }
+        return result;
 }

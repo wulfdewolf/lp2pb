@@ -22,9 +22,9 @@ class Parser {
 
     void parse_rules(ifstream &infile, Translator &translator);
 
-    void parse_symbol_table(ifstream &infile, char symbol_table[], int highest);
+    void parse_symbol_table(ifstream &infile, Translator &translator);
 
-    int parse_compute(ifstream &infile, bool values[]);
+    void parse_compute(ifstream &infile, Translator &translator);
 
     public: 
 

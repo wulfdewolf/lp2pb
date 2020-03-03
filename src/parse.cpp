@@ -11,6 +11,7 @@
 *             > translator object calls
 *           + parse_symbol_table
 *           + parse_compute
+*             > translator object calls
 *   
 */
 #include "../include/parse.h"
@@ -36,30 +37,15 @@ int Parser::parse_file(char* file, Translator &translator) {
     // Create stream from given filename
     ifstream infile(file);
     
-    // Parse the rules
+    // Parse the rules a first time just to get the highest variable number
     parse_rules(infile, translator);
-    int highest = translator.highest;
 
     // Parse symbol table
-    char symboltable[highest];
-    parse_symbol_table(infile, symboltable, highest);
-  
-    // DEBUG ------------------ Print symbol table
-    for(int i = 0; i < highest; i++) {
-        cout << "idx: " << i+1 << " has symbol: " << symboltable[i] << '\n';
-    }
-    // DEBUG ------------------ 
+    parse_symbol_table(infile, translator);
 
     // Parse compute statements
-    bool values[highest] = { false };
-    int amount_of_models = parse_compute(infile, values);
-
-    // DEBUG ------------------ Print values
-    for(int i = 0; i < highest; i++) {
-        cout << "idx: " << i+1 << " has value: " << values[i] << '\n';
-    }
-    cout << "Amount of models to calculate: " << amount_of_models << '\n';
-    // DEBUG ------------------ 
+    parse_compute(infile, translator);
+    translator.translate_values();
 
     // Close the file
     infile.close();
@@ -82,7 +68,7 @@ void Parser::parse_rules(ifstream &infile, Translator &translator) {
             case ZERO_RULE: 
                 return;
             case BASIC:
-                translator.translate_basic(iss);
+                translator.translate_basic(iss, line);
                 break;
             case CONSTRAINT:
                 translator.translate_constraint(iss);
@@ -102,7 +88,10 @@ void Parser::parse_rules(ifstream &infile, Translator &translator) {
 }
 
 // Parses the symbol table
-void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highest) {
+void Parser::parse_symbol_table(ifstream &infile, Translator &translator) {
+
+    // Initialise the symbol table
+    translator.symbol_table = new char[translator.highest];
 
     int curr;
     char curr_symbol;
@@ -121,21 +110,27 @@ void Parser::parse_symbol_table(ifstream &infile, char symbol_table[], int highe
         }
 
         if(curr == i + 1) {
-            symbol_table[i] = curr_symbol;
+            translator.symbol_table[i] = curr_symbol;
             was_hidden = false;
         } else {
-            symbol_table[i] = '/';
+            translator.symbol_table[i] = '/';
             was_hidden = true;
         }
     }
 }
 
 // Parses the compute statements
-int Parser::parse_compute(ifstream &infile, bool values[]) {
+void Parser::parse_compute(ifstream &infile, Translator &translator) {
+
+    // Initialise the values array
+    translator.values = new int[translator.highest];
+    for(int i = 0; i < translator.highest; i++) {
+        translator.values[i] = 2;
+    }
 
     int curr;
     string line;
-
+    
     // Skip the 'B+'
     getline(infile, line);
 
@@ -143,24 +138,27 @@ int Parser::parse_compute(ifstream &infile, bool values[]) {
     while(getline(infile, line)) {
         istringstream iss(line);
         iss>>curr;
-        if(curr == ZERO_RULE) {
-            break;
-        } else {
-            values[curr-1] = true;
-        }
+
+        if(curr == ZERO_RULE) break;
+        else translator.values[curr-1] = true;
     }
 
-    // Skip the negatives part
+    // Skip the 'B-'
+    getline(infile, line);
+
+    // Get the negatives
     while(getline(infile, line)) {
         istringstream iss(line);
-        if(curr == ZERO_RULE) {
-            break;
-        }
+        iss>>curr;
+
+        if(curr == ZERO_RULE) break;
+        else translator.values[curr-1] = false;
     }
 
-    // Get the amount of models to be calculated
+    // Get the amount of models
     getline(infile, line);
     istringstream iss(line);
-    iss>>curr;
-    return curr;
+    iss>>translator.amount_of_models;
+
+    return;
 }
