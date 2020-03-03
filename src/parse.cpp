@@ -1,10 +1,22 @@
 /*
-*   Parsing input files
+*
+*   PARSING: handles the parsing of the given input files
+             file by file; line by line
+*
+*
+*   --> HIERARCHY:
+*        - parse
+*         * parse_file
+*           + parse_rules
+*             > translator object calls
+*           + parse_symbol_table
+*           + parse_compute
+*   
 */
 #include "../include/parse.h"
 
 // Parses each file in a given array of filenames
-int Parser::parse(char* files[], int nfiles, Translator translator) {
+int Parser::parse(char* files[], int nfiles, Translator &translator) {
 
     int status; 
 
@@ -19,33 +31,35 @@ int Parser::parse(char* files[], int nfiles, Translator translator) {
 }
 
 // Parses one file completely
-int Parser::parse_file(char* file, Translator translator) {
+int Parser::parse_file(char* file, Translator &translator) {
 
     // Create stream from given filename
     ifstream infile(file);
     
     // Parse the rules
     parse_rules(infile, translator);
-    int highest = 3; //translator::highest;
+    int highest = translator.highest;
 
     // Parse symbol table
     char symboltable[highest];
     parse_symbol_table(infile, symboltable, highest);
   
-    // Print symbol table (DEBUG)
+    // DEBUG ------------------ Print symbol table
     for(int i = 0; i < highest; i++) {
         cout << "idx: " << i+1 << " has symbol: " << symboltable[i] << '\n';
     }
+    // DEBUG ------------------ 
 
     // Parse compute statements
     bool values[highest] = { false };
     int amount_of_models = parse_compute(infile, values);
 
-    // Print svalues (DEBUG)
+    // DEBUG ------------------ Print values
     for(int i = 0; i < highest; i++) {
         cout << "idx: " << i+1 << " has value: " << values[i] << '\n';
     }
     cout << "Amount of models to calculate: " << amount_of_models << '\n';
+    // DEBUG ------------------ 
 
     // Close the file
     infile.close();
@@ -53,37 +67,36 @@ int Parser::parse_file(char* file, Translator translator) {
 }
 
 // Parses the rules
-void Parser::parse_rules(ifstream &infile, Translator translator) {
+void Parser::parse_rules(ifstream &infile, Translator &translator) {
 
     int curr;
     string line;
-
-    // Specific rule parts
-    int head;
-    int literals_body;
-    int negative_body;
 
     while(getline(infile, line)) {
         istringstream iss(line);
 
         iss>>curr;
         cout << "Curr rule type= " << curr << '\n';
-        if(curr == ZERO_RULE) return;
         
-        /*switch(curr) {
+        switch(curr) {
             case ZERO_RULE: 
                 return;
             case BASIC:
-                translator::translate_basic(line);
+                translator.translate_basic(iss);
+                break;
             case CONSTRAINT:
-                translator::translate_constraint(line);
+                translator.translate_constraint(iss);
+                break;
             case CHOICE:
-                translator::translate_choice(line);
+                translator.translate_choice(iss);
+                break;
             case WEIGHT:
-                translator::translate_weight(line);
+                translator.translate_weight(iss);
+                break;
             case MINIMIZE:
-                translator::translate_min_max(line);
-        }*/
+                translator.translate_min_max(iss);
+                break;
+        }
     }
     return;
 }

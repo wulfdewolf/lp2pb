@@ -18,12 +18,9 @@ class Parser {
 
     private:
 
-    int amount_of_variables = 0;
-    int amount_of_contraints = 0;
+    int parse_file(char* file, Translator &translator);
 
-    int parse_file(char* file, Translator translator);
-
-    void parse_rules(ifstream &infile, Translator translator);
+    void parse_rules(ifstream &infile, Translator &translator);
 
     void parse_symbol_table(ifstream &infile, char symbol_table[], int highest);
 
@@ -31,7 +28,7 @@ class Parser {
 
     public: 
 
-    int parse(char* files[], int nfiles, Translator translator);
+    int parse(char* files[], int nfiles, Translator &translator);
 
 };
 

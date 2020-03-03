@@ -1,8 +1,6 @@
 /*
 *
 *   lp2pb: ASP to PB translator
-*
-*   author: Wolf De Wulf
 * 
 */
 #include <iostream>
