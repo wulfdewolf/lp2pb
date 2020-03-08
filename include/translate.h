@@ -10,6 +10,8 @@
 #include <stdexcept>
 #include <array>
 
+#include "exec.h"
+
 using namespace std;
 
 // TRANSLATOR CLASS
@@ -19,7 +21,6 @@ class Translator {
 
     // Utility
     void read_literals(int array[], int amount, istringstream &iss);
-    string exec(string cmd);
 
     // Streams
     stringstream constraints;
@@ -27,6 +28,9 @@ class Translator {
 
 
     public: 
+
+    // Executor
+    Executor *executor;
 
     int highest = 0;
     int amount_of_constraints = 0;
@@ -41,10 +45,8 @@ class Translator {
     void translate_weight(istringstream &iss, string line);
     void translate_min_max(istringstream &iss, string line);
 
-    // RULE TRANSLATOR TYPE
-    typedef void (Translator::*rule_translator)(istringstream &iss, string line);
-
     // Rule translation function container
+    typedef void (Translator::*rule_translator)(istringstream &iss, string line);
     rule_translator rule_translation_functions[5] = { &Translator::translate_basic, 
                                                       &Translator::translate_constraint,
                                                       &Translator::translate_choice,

@@ -28,10 +28,14 @@ int main(int argc, char* argv[]) {
 
     } else {
 
-        Parser parser;
+        Executor executor;
         Translator translator;
+        Parser parser;
 
-        parser.parse(argv+1, argc-1, translator);
+        parser.translator = &translator;
+        translator.executor = &executor;
+
+        parser.parse(argv+1, argc-1);
     }
 
     return 0;

@@ -19,15 +19,18 @@ class Parser {
     private:
 
     // Parse hierarchy
-    void parse_file(char* file, Translator &translator);
-    void parse_rules(ifstream &infile, Translator &translator);
-    void parse_symbol_table(ifstream &infile, Translator &translator);
-    void parse_compute(ifstream &infile, Translator &translator);
+    void parse_file(char* file);
+    void parse_rules(ifstream &infile);
+    void parse_symbol_table(ifstream &infile);
+    void parse_compute(ifstream &infile);
 
 
     public: 
 
-    void parse(char* files[], int nfiles, Translator &translator);
+    // Translator
+    Translator *translator;
+
+    void parse(char* files[], int nfiles);
 
 };
 

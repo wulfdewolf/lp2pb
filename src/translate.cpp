@@ -7,6 +7,7 @@
 *   
 */
 #include "../include/translate.h"
+#include <cstring>
 
 
 //-----------------------------------------------------------------------------
@@ -14,6 +15,19 @@
 //-----------------------------------------------------------------------------
 void Translator::merge() {
 
+    char cmd[16] = "sat/lp2sat-1.24";
+
+    // Write to child’s stdin
+    ifstream infile("test2");
+    string line;
+    string out;
+
+    while(getline(infile, line)) {
+            istringstream iss(line);
+            out = out + line; 
+        }
+    infile.close();
+    this->executor->exec(cmd, out);
 }
 
 void Translator::translate_sat() {
@@ -24,7 +38,8 @@ void Translator::translate_values() {
 
     // Loop over all parsed values and add the corresponding constraints
     for(int i = 0; i < highest; i++) {
-        switch(this->values[i]) {
+
+        switch(this->values[i]) {            
             case 0: 
                 this->constraints << 'x' << i << " < " << 1 << " ;" << '\n';
                 this->amount_of_constraints++;
@@ -199,15 +214,16 @@ void Translator::read_literals(int array[], int amount, istringstream &iss) {
     }
 }
 
-string Translator::exec(string cmd) {
+/*string Translator::exec(string cmd) {
         array<char, 128> buffer;
         string result;
         unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
         if (!pipe) {
             throw runtime_error("popen() failed!");
         }
+        pipe.put(to_sat);
         while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
             result += buffer.data();
         }
         return result;
-}
+}*/
