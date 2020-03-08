@@ -1,6 +1,6 @@
 /*
 *
-*   PARSING: handles the parsing of the given input files
+*   PARSER: handles the parsing of the given input files
              file by file; line by line
 *
 *

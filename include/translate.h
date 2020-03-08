@@ -5,12 +5,8 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <cstdio>
-#include <memory>
-#include <stdexcept>
-#include <array>
 
-#include "exec.h"
+#include "execute.h"
 
 using namespace std;
 

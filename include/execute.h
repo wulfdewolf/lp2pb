@@ -2,7 +2,8 @@
 #define EXEC_H
 
 #include <unistd.h>
-#include <string>
+#include <ext/stdio_filebuf.h>
+#include <iostream>
 
 using namespace std;
 
@@ -28,10 +29,13 @@ class Executor {
     int infd[2];
     int pipes[NUM_PIPES][2];
 
+    void write_to_pipe(int file_descriptor, istream &input);
+    void read_from_pipe (int file_descriptor, ostream &output);
     
+
     public:
 
-    void exec(char *cmd, string input);
+    void exec(char *cmd, istream &input, ostream &output);
 
 };
 

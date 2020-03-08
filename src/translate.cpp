@@ -1,33 +1,37 @@
 /*
 *
-*   TRANSLATION: handles translation of the different rule types
+*   TRANSLATOR: handles translation of the different rule types
 *
 *
 *   --> some utility methods are implemented at the bottom
 *   
 */
 #include "../include/translate.h"
-#include <cstring>
-
 
 //-----------------------------------------------------------------------------
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
 void Translator::merge() {
 
+    // Command to execute
     char cmd[16] = "sat/lp2sat-1.24";
 
-    // Write to child’s stdin
-    ifstream infile("test2");
-    string line;
-    string out;
+    // DEBUG ---------------- will be to_sat
+    ifstream infile("test");
+    // DEBUG ----------------
 
-    while(getline(infile, line)) {
-            istringstream iss(line);
-            out = out + line; 
-        }
-    infile.close();
-    this->executor->exec(cmd, out);
+    // Output written to stringstream
+    stringstream output;
+
+    this->executor->exec(cmd, infile, output);
+
+    // DEBUG ---------------- print output
+    string linee;
+    while(output.good()) {
+      getline(output, linee);
+      cout << linee << '\n';
+    }
+    // DEBUG ---------------- 
 }
 
 void Translator::translate_sat() {
@@ -213,17 +217,3 @@ void Translator::read_literals(int array[], int amount, istringstream &iss) {
         this->highest = max(this->highest, array[i]);
     }
 }
-
-/*string Translator::exec(string cmd) {
-        array<char, 128> buffer;
-        string result;
-        unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-        if (!pipe) {
-            throw runtime_error("popen() failed!");
-        }
-        pipe.put(to_sat);
-        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-            result += buffer.data();
-        }
-        return result;
-}*/
