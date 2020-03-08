@@ -5,7 +5,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
- #include <vector>
+#include <cstdio>
+#include <memory>
+#include <stdexcept>
+#include <array>
 
 using namespace std;
 
@@ -16,11 +19,12 @@ class Translator {
 
     // Utility
     void read_literals(int array[], int amount, istringstream &iss);
-
     string exec(string cmd);
 
+    // Streams
     stringstream constraints;
     stringstream to_sat;
+
 
     public: 
 
@@ -32,16 +36,27 @@ class Translator {
 
     // Specific translation per rule type
     void translate_basic(istringstream &iss, string line);
-    void translate_constraint(istringstream &iss);
-    void translate_choice(istringstream &iss);
-    void translate_weight(istringstream &iss);
-    void translate_min_max(istringstream &iss);
+    void translate_constraint(istringstream &iss, string line);
+    void translate_choice(istringstream &iss, string line);
+    void translate_weight(istringstream &iss, string line);
+    void translate_min_max(istringstream &iss, string line);
+
+    // RULE TRANSLATOR TYPE
+    typedef void (Translator::*rule_translator)(istringstream &iss, string line);
+
+    // Rule translation function container
+    rule_translator rule_translation_functions[5] = { &Translator::translate_basic, 
+                                                      &Translator::translate_constraint,
+                                                      &Translator::translate_choice,
+                                                      &Translator::translate_weight,
+                                                      &Translator::translate_min_max };
 
     // Values
     void translate_values();
 
     // Call to lp2sat and merge
     void translate_sat();
+    void merge();
 
 };
 

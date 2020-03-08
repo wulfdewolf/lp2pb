@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
         Parser parser;
         Translator translator;
 
-        int test = parser.parse(argv+1, argc-1, translator);
+        parser.parse(argv+1, argc-1, translator);
     }
 
     return 0;

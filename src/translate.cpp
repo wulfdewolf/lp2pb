@@ -7,16 +7,15 @@
 *   
 */
 #include "../include/translate.h"
-#include <cstdio>
-#include <iostream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <array>
+
 
 //-----------------------------------------------------------------------------
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
+void Translator::merge() {
+
+}
+
 void Translator::translate_sat() {
 
 }
@@ -66,7 +65,7 @@ void Translator::translate_basic(istringstream &iss, string line) {
     return;
 }
 
-void Translator::translate_constraint(istringstream &iss) {
+void Translator::translate_constraint(istringstream &iss, string line) {
 
     // Get rule data
     int head;
@@ -90,12 +89,16 @@ void Translator::translate_constraint(istringstream &iss) {
     read_literals(neg, negatives, iss);
     read_literals(pos, positives, iss);
 
-    // TODO: translation code
+    // Add correct parts to streams
+    int new_var = ++this->highest;
+    this->to_sat << 1 << head << 1 << 0 << new_var << '\n';
+    this->constraints << "test" << '\n';
+    this->amount_of_constraints++;
 
     return;
 }
 
-void Translator::translate_choice(istringstream &iss) {
+void Translator::translate_choice(istringstream &iss, string line) {
     
     // Get rule data
     int amount_of_heads;
@@ -124,7 +127,7 @@ void Translator::translate_choice(istringstream &iss) {
     return;
 }
 
-void Translator::translate_weight(istringstream &iss) {
+void Translator::translate_weight(istringstream &iss, string line) {
         
     // Get rule data
     int head;
@@ -157,7 +160,7 @@ void Translator::translate_weight(istringstream &iss) {
     return;
 }
 
-void Translator::translate_min_max(istringstream &iss) {
+void Translator::translate_min_max(istringstream &iss, string line) {
     
     // Get rule data
     int literals;

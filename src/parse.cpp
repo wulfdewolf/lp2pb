@@ -17,27 +17,24 @@
 #include "../include/parse.h"
 
 // Parses each file in a given array of filenames
-int Parser::parse(char* files[], int nfiles, Translator &translator) {
+void Parser::parse(char* files[], int nfiles, Translator &translator) {
 
     int status; 
 
     // Parse each file separately
     for(int i=0; i < nfiles; i++) {
-
-        // Print out current file name
-        cout << "Current file: " << files[i] << '\n';
-        status = parse_file(files[i], translator);
+        parse_file(files[i], translator);
     }
-    return status;
+    return;
 }
 
 // Parses one file completely
-int Parser::parse_file(char* file, Translator &translator) {
+void Parser::parse_file(char* file, Translator &translator) {
 
     // Create stream from given filename
     ifstream infile(file);
     
-    // Parse the rules a first time just to get the highest variable number
+    // Parse rules
     parse_rules(infile, translator);
 
     // Parse symbol table
@@ -47,9 +44,9 @@ int Parser::parse_file(char* file, Translator &translator) {
     parse_compute(infile, translator);
     translator.translate_values();
 
-    // Close the file
+    // Close file
     infile.close();
-    return 0;
+    return;
 }
 
 // Parses the rules
@@ -60,28 +57,12 @@ void Parser::parse_rules(ifstream &infile, Translator &translator) {
 
     while(getline(infile, line)) {
         istringstream iss(line);
-
         iss>>curr;
-        cout << "Curr rule type= " << curr << '\n';
-        
-        switch(curr) {
-            case ZERO_RULE: 
-                return;
-            case BASIC:
-                translator.translate_basic(iss, line);
-                break;
-            case CONSTRAINT:
-                translator.translate_constraint(iss);
-                break;
-            case CHOICE:
-                translator.translate_choice(iss);
-                break;
-            case WEIGHT:
-                translator.translate_weight(iss);
-                break;
-            case MINIMIZE:
-                translator.translate_min_max(iss);
-                break;
+
+        if(curr == ZERO_RULE) return;
+        else {
+            Translator::rule_translator translation_function = translator.rule_translation_functions[curr-1];
+            (translator.*translation_function)(iss, line);
         }
     }
     return;
