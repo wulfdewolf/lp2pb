@@ -17,6 +17,7 @@ class Translator {
 
     // Utility
     void read_literals(int array[], int amount, istringstream &iss);
+    void add_constraint(int neg[], int neg_weights[], int negatives, int pos[], int pos_weights[], int positives, int value);
 
     // Streams
     stringstream constraints;
@@ -28,7 +29,7 @@ class Translator {
     // Executor
     Executor *executor;
 
-    int highest = 0;
+    int highest = 1;
     int amount_of_constraints = 0;
     int amount_of_models;
     char* symbol_table;

@@ -56,6 +56,21 @@ void Parser::parse_rules(ifstream &infile) {
     int curr;
     string line;
 
+    // Parse first time to get highest variable number
+    while(getline(infile, line)) {
+        istringstream iss(line);
+        iss>>curr;
+        if(curr == ZERO_RULE) break;
+        else {
+            while(iss>>curr) {
+                this->translator->highest = max(curr, this->translator->highest);
+            }
+        }
+    }
+
+    // Go back to begin to parse rules again
+    infile.seekg(0, ios::beg);
+
     while(getline(infile, line)) {
         istringstream iss(line);
         iss>>curr;
