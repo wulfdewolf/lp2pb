@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <stdexcept>
 
 #include "translate.h"
 
@@ -17,6 +18,10 @@ enum rule_type{ ZERO_RULE, BASIC, CONSTRAINT, CHOICE, TTTTT, WEIGHT, MINIMIZE};
 class Parser {
 
     private:
+
+    // Utility
+    void skip(int amount, istringstream &iss);
+    void parse_max(int amount, istringstream &iss);
 
     // Parse hierarchy
     void parse_file(char* file);

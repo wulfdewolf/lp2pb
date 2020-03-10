@@ -17,6 +17,8 @@ class Translator {
 
     // Utility
     void read_literals(int array[], int amount, istringstream &iss);
+    void add_sat(int rule[], int amount);
+    void add_series(int names[], int weights[], int amount, bool sign);
     void add_constraint(int neg[], int neg_weights[], int negatives, int pos[], int pos_weights[], int positives, int value);
 
     // Streams
@@ -36,6 +38,7 @@ class Translator {
     int* values;
 
     // Specific translation per rule type
+    void translate_zero(istringstream &iss, string line);
     void translate_basic(istringstream &iss, string line);
     void translate_constraint(istringstream &iss, string line);
     void translate_choice(istringstream &iss, string line);
@@ -44,9 +47,11 @@ class Translator {
 
     // Rule translation function container
     typedef void (Translator::*rule_translator)(istringstream &iss, string line);
-    rule_translator rule_translation_functions[5] = { &Translator::translate_basic, 
+
+    rule_translator rule_translation_functions[6] = { &Translator::translate_basic, 
                                                       &Translator::translate_constraint,
                                                       &Translator::translate_choice,
+                                                      &Translator::translate_zero,
                                                       &Translator::translate_weight,
                                                       &Translator::translate_min_max };
 

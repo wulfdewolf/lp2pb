@@ -78,7 +78,7 @@ void Translator::translate_values() {
 
 void Translator::translate_basic(istringstream &iss, string line) {
 
-    // Add correct parts to streams
+    // basic rules are completely translated to sat
     this->to_sat << line << '\n';
 
     return;
@@ -86,19 +86,14 @@ void Translator::translate_basic(istringstream &iss, string line) {
 
 void Translator::translate_constraint(istringstream &iss, string line) {
 
-    // Get rule data
-    int head;
+    /*
+    *   Get rule data
+    */ 
+    int head, literals, negatives, positives, bound;
     iss>>head;
-
-    int literals;
     iss>>literals;
-
-    int negatives;
     iss>>negatives;
-
-    int positives = literals - negatives;
-
-    int bound;
+    positives = literals - negatives;
     iss>>bound;
 
     // Read the arrays of positives and negatives
@@ -108,16 +103,19 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     read_literals(neg, negatives, iss);
     read_literals(pos, positives, iss);
 
+    /*
+    *   Add correct parts to streams
+    */ 
 
-    //------ Add correct parts to streams
-
-    //-- to_sat
+    // to_sat
     int new_var = ++this->highest;
+    int new_var_rule[5] = { 1, head, 1, 0, new_var };
+    int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
 
-    this->to_sat << 1 << " " << head << " " << 1 << " " << 0 << " " << new_var << '\n';
-    this->to_sat << 3 << " " << 1 << " " << new_var << " " << 0 << " " << 0 << " " << '\n';
+    add_sat(new_var_rule, 5);
+    add_sat(new_choice_rule, 5);
 
-    //-- constraints
+    // constraints
     int neg_weights[negatives+1];
     int pos_weights[positives];
     fill_n(neg_weights, negatives, 1);
@@ -129,100 +127,122 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     add_constraint(neg, neg_weights, negatives+1, pos, pos_weights, positives, bound);
     
     // X = false constraint
-    fill_n(neg_weights, negatives, -1);
-    fill_n(pos_weights, positives, -1);
-    neg_weights[negatives] = bound + literals;
-    add_constraint(neg, neg_weights, negatives+1, pos, pos_weights, positives, 0-bound);
+    int sum_weights = 0;
+    for(int i = 0; i < negatives; i++) {
+        sum_weights += neg_weights[i];
+        neg_weights[i] = -1;
+    }
+    for(int i = 0; i < positives; i++) {
+        sum_weights += pos_weights[i];
+        pos_weights[i] = -1;
+    }
+    neg_weights[negatives] = abs(sum_weights - bound) + 1;
+    add_constraint(neg, neg_weights, negatives+1, pos, pos_weights, positives, 0-bound+1);
 
     return;
 }
 
 void Translator::translate_choice(istringstream &iss, string line) {
-    
-    // Get rule data
-    int amount_of_heads;
-    iss>>amount_of_heads;
 
-    int heads[amount_of_heads];
-    read_literals(heads, amount_of_heads, iss);
-
-    int literals;
-    iss>>literals;
-
-    int negatives;
-    iss>>negatives;
-
-    int positives = literals - negatives;
-
-    // Read the arrays of positives and negatives
-    int neg[negatives];
-    int pos[positives];
-
-    read_literals(neg, negatives, iss);
-    read_literals(pos, positives, iss);
-
-    // TODO: translation code
+    // choice rules are completely translated to sat
+    this->to_sat << line << '\n';
 
     return;
 }
 
+void Translator::translate_zero(istringstream &iss, string line) {
+    return;
+}
+
 void Translator::translate_weight(istringstream &iss, string line) {
-        
-    // Get rule data
-    int head;
+
+    /*
+    *   Get rule data
+    */ 
+    int head, bound, literals, negatives, positives;
     iss>>head;
-
-    int bound;
     iss>>bound;
-
-    int literals;
     iss>>literals;
-
-    int negatives;
     iss>>negatives;
+    positives = literals - negatives;
 
-    int positives = literals - negatives;
-
-    // Read the arrays of positives and negatives
-    int neg[negatives];
+    // Read the arrays of positives and negatives + their weights
+    int neg[negatives+1];
+    int neg_weights[negatives+1];
     int pos[positives];
+    int pos_weights[positives];
 
     read_literals(neg, negatives, iss);
     read_literals(pos, positives, iss);
+    read_literals(neg_weights, negatives, iss);
+    read_literals(pos_weights, positives, iss);
 
-    // Read the array of weights
-    int weights[literals];
-    read_literals(weights, literals, iss);
+    /*
+    *   Add correct parts to streams
+    */ 
 
-    // TODO: translation code
+    // to_sat
+    int new_var = ++this->highest;
+    int new_var_rule[5] = { 1, head, 1, 0, new_var };
+    int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
+
+    add_sat(new_var_rule, 5);
+    add_sat(new_choice_rule, 5);
+
+    // constraints
+    neg_weights[negatives] = bound;
+    neg[negatives] = head;
+
+    // X = true constraint
+    add_constraint(neg, neg_weights, negatives+1, pos, pos_weights, positives, bound);
+    
+    // X = false constraint
+
+    // --> invert all weights
+    int sum_weights = 0;
+    for(int i = 0; i < positives; i++) {
+        sum_weights += abs(pos_weights[i]);
+        pos_weights[i] = -pos_weights[i];
+    }
+    for(int i = 0; i < negatives; i++) {
+        sum_weights += abs(neg_weights[i]);
+        neg_weights[i] = -neg_weights[i];
+    }
+    neg_weights[negatives] = abs(sum_weights - bound) + 1;
+    add_constraint(neg, neg_weights, negatives+1, pos, pos_weights, positives, 0-bound+1);
 
     return;
 }
 
 void Translator::translate_min_max(istringstream &iss, string line) {
-    
-    // Get rule data
-    int literals;
-    iss>>literals; // Skip the zero
+
+    /*
+    *   Get rule data
+    */ 
+    int literals, negatives, positives;
+    iss>>literals; // skip the zero
     iss>>literals;
-
-    int negatives;
     iss>>negatives;
+    positives = literals - negatives;
 
-    int positives = literals - negatives;
-
-    // Read the arrays of positives and negatives
+    // Read the arrays of positives and negatives + their weights
     int neg[negatives];
+    int neg_weights[negatives];
     int pos[positives];
+    int pos_weights[positives];
 
     read_literals(neg, negatives, iss);
     read_literals(pos, positives, iss);
+    read_literals(neg_weights, negatives, iss);
+    read_literals(pos_weights, positives, iss);
 
-    // Read the array of weights
-    int weights[literals];
-    read_literals(weights, literals, iss);
-
-    // TODO: translation code
+    /*
+    *   Add correct parts to streams
+    */ 
+    this->constraints << "min: ";
+    add_series(neg, neg_weights, negatives, 0);
+    add_series(pos, pos_weights, positives, 1);
+    this->constraints << ";\n";
 
     return;
 }
@@ -237,36 +257,40 @@ void Translator::read_literals(int array[], int amount, istringstream &iss) {
     }
 }
 
+void Translator::add_sat(int rule[], int amount) {
+
+    int i = 0;
+    while(i < amount) {
+        this->to_sat << rule[i];
+        if(++i == amount) {
+            this->to_sat << '\n';
+            break;
+        } else this->to_sat << " ";
+    }
+}
+
+void Translator::add_series(int names[], int weights[], int amount, bool sign) {
+    for(int i = 0; i < amount; i++) {
+
+        // Sign
+        if(weights[i] < 0) this->constraints << "-";
+        else this->constraints << "+";
+
+        // Weight
+        this->constraints << abs(weights[i]);
+        
+        // Symbol
+        const char* var_name = " ~x";
+        if(sign) var_name = " x";
+        this->constraints << var_name << names[i] << " ";
+    }
+}
+
 void Translator::add_constraint(int neg[], int neg_weights[], int negatives, int pos[], int pos_weights[], int positives, int value) {
 
-    // Negatives
-    for(int i = 0; i < negatives; i++) {
-
-        // Sign
-        if(neg_weights[i] < 0) this->constraints << "- ";
-        else this->constraints << "+ ";
-
-        // Weight
-        this->constraints << abs(neg_weights[i]);
-        
-        // Symbol
-        this->constraints << " ~x" << neg[i] << " ";
-    }
-
-    // Positives
-    for(int i = 0; i < positives; i++) {
-
-        // Sign
-        if(pos_weights[i] < 0) this->constraints << "- ";
-        else this->constraints << "+ ";
-
-        // Weight
-        this->constraints << abs(pos_weights[i]);
-        
-        // Symbol
-        this->constraints << " x" << pos[i] << " ";
-    }
-    this->constraints << ">=" << value << ';' << '\n';
+    add_series(neg, neg_weights, negatives, 0);
+    add_series(pos, pos_weights, positives, 1);
+    this->constraints << ">= " << value << ';' << '\n';
 
     // Increase counter
     this->amount_of_constraints++;

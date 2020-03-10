@@ -60,23 +60,28 @@ void Parser::parse_rules(ifstream &infile) {
     while(getline(infile, line)) {
         istringstream iss(line);
         iss>>curr;
+
+        // Only read the literal parts
         if(curr == ZERO_RULE) break;
-        else {
-            while(iss>>curr) {
-                this->translator->highest = max(curr, this->translator->highest);
-            }
-        }
+        else if(curr == CHOICE || curr == WEIGHT) skip(3, iss);
+        else skip(2, iss);
+
+        iss>>curr;
+        parse_max(curr, iss);
     }
 
-    // Go back to begin to parse rules again
+    // Go back to begin
     infile.seekg(0, ios::beg);
 
+    // Parse second time to translate
     while(getline(infile, line)) {
         istringstream iss(line);
         iss>>curr;
 
-        if(curr == ZERO_RULE) return;
+        if(curr < 0 || curr > 6) throw runtime_error("Unknow rule type in input file!");
+        else if(curr == ZERO_RULE) return;
         else {
+            // Reference in the method array using the rule type to get matching translation function
             Translator::rule_translator translation_function = this->translator->rule_translation_functions[curr-1];
             (this->translator->*translation_function)(iss, line);
         }
@@ -157,5 +162,25 @@ void Parser::parse_compute(ifstream &infile) {
     istringstream iss(line);
     iss>>this->translator->amount_of_models;
 
+    return;
+}
+
+//-----------------------------------------------------------------------------
+//                                  UTILITY
+//-----------------------------------------------------------------------------
+void Parser::skip(int amount, istringstream &iss) {
+    int curr;
+    for(int i = 0; i < amount; i++) {
+        iss>>curr;
+    }
+    return;
+}
+
+void Parser::parse_max(int amount, istringstream &iss) {
+    int curr;
+    for(int i = 0; i < amount; i++) {
+        iss>>curr;
+        this->translator->highest = max(this->translator->highest, curr);
+    }
     return;
 }
