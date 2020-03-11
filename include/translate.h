@@ -18,7 +18,9 @@ class Translator {
     // Utility
     void read_literals(int array[], int amount, istringstream &iss);
     void add_sat(int rule[], int amount);
+    void add_single(int name, int weight, bool sign);
     void add_series(int names[], int weights[], int start, int end, bool sign);
+    void add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
     void add_constraint(int variables[], int weights[], int negatives, int positives, int value);
 
     // Streams

@@ -97,8 +97,8 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     iss>>bound;
 
     // Read the arrays of variables
-    int variables[literals+1];
-    int weights[literals+1];
+    int variables[literals];
+    int weights[literals];
     read_literals(variables, literals, iss);
 
     /*
@@ -114,20 +114,18 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     add_sat(new_choice_rule, 5);
 
     // -- Constraints
-    variables[literals] = new_var;
+
+    // X = true constraint
 
     // All weights are 1 here so we don't need to calculate the sum
     fill_n(weights, literals, 1);
-
-    // X = true constraint
-    weights[literals] = bound;
-    add_constraint(variables, weights, negatives, positives+1, bound);
+    add_constraint_with_extra(variables, weights, negatives, positives, bound, new_var, bound, 0);
     
     // X = false constraint
+
     // --> invert all weights
     fill_n(weights, literals, -1);
-    weights[literals] = abs(-literals+bound-1);
-    add_constraint(variables, weights, negatives, positives+1, 0-bound+1);
+    add_constraint_with_extra(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
 
     return;
 }
@@ -157,8 +155,8 @@ void Translator::translate_weight(istringstream &iss, string line) {
     positives = literals - negatives;
 
     // Read the arrays of variables + their weights
-    int variables[literals+1];
-    int weights[literals+1];
+    int variables[literals];
+    int weights[literals];
     read_literals(variables, literals, iss);
     read_literals(weights, literals, iss);
 
@@ -176,7 +174,6 @@ void Translator::translate_weight(istringstream &iss, string line) {
 
 
     // -- Constraints
-    variables[literals] = new_var;
 
     // X = true constraint
 
@@ -185,10 +182,7 @@ void Translator::translate_weight(istringstream &iss, string line) {
     for(int i = 0; i < literals; i++) {
         if(weights[i] < 0) sum_neg_weights += weights[i];
     }
-
-    // store as weight for new variable
-    weights[literals] = abs(sum_neg_weights-bound);
-    add_constraint(variables, weights, negatives, positives+1, bound);
+    add_constraint_with_extra(variables, weights, negatives, positives, bound, new_var, abs(sum_neg_weights-bound), 0);
     
     // X = false constraint
 
@@ -198,10 +192,7 @@ void Translator::translate_weight(istringstream &iss, string line) {
         if(weights[i] >= 0) sum_pos_weights += weights[i];
         weights[i] = -weights[i];
     }
-
-    // store as weight for new variable
-    weights[literals] = abs(-sum_pos_weights+bound-1);
-    add_constraint(variables, weights, negatives, positives+1, 0-bound+1);
+    add_constraint_with_extra(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-sum_pos_weights+bound-1), 1);
 
     return;
 }
@@ -256,21 +247,39 @@ void Translator::add_sat(int rule[], int amount) {
     }
 }
 
+void Translator::add_single(int name, int weight, bool sign) {
+
+    // Sign
+    if(weight < 0) this->constraints << "-";
+    else this->constraints << "+";
+
+    // Weight
+    this->constraints << abs(weight);
+        
+    // Symbol
+    const char* var_name = " ~x";
+    if(sign) var_name = " x";
+    this->constraints << var_name << name << " ";
+
+    return;
+}
+
 void Translator::add_series(int names[], int weights[], int start, int end, bool sign) {
     for(int i = start; i < end; i++) {
-
-        // Sign
-        if(weights[i] < 0) this->constraints << "-";
-        else this->constraints << "+";
-
-        // Weight
-        this->constraints << abs(weights[i]);
-        
-        // Symbol
-        const char* var_name = " ~x";
-        if(sign) var_name = " x";
-        this->constraints << var_name << names[i] << " ";
+        add_single(names[i], weights[i], sign);
     }
+    return;
+}
+
+void Translator::add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign) {
+
+    add_series(variables, weights, 0, negatives, 0);
+    add_single(extra, extra_weight, extra_sign);
+    add_series(variables, weights, negatives, positives+1, 1);
+    this->constraints << ">= " << value << ';' << '\n';
+
+    // Increase counter
+    this->amount_of_constraints++;
 }
 
 void Translator::add_constraint(int variables[], int weights[], int negatives, int positives, int value) {
