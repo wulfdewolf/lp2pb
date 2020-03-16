@@ -54,18 +54,14 @@ void Translator::merge() {
 
 void Translator::translate_value(int index, int sign) {
 
-    switch(sign) {            
-        case 0: 
-            this->constraints << "~x" << index << " >= " << 1 << ";" << '\n';
-            this->amount_of_constraints++;
-            break;
-        case 1: 
-            this->constraints << 'x' << index << " >= " << 1 << ";" << '\n';
-            this->amount_of_constraints++;
-            break;
-        case 2:
-            break;
+    string variable = "x";
+    if(!sign) {
+        variable = "~x";
     }
+    this->constraints << variable << index << " >= " << 1 << ";" << '\n';
+    this->amount_of_constraints++;
+
+    return;
 }
 
 void Translator::translate_sat(string line) {
