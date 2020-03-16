@@ -1,63 +1,55 @@
 /*
 *
-*   PARSER: handles the parsing of the given input files
-             file by file; line by line
+*   PARSER: handles the parsing of the given input, line by line
 *
 *
 *   --> HIERARCHY:
 *        - parse
-*         * parse_file
 *           + parse_rules
 *             > translator object calls
 *           + parse_symbol_table
+              > translator object calls
 *           + parse_compute
 *             > translator object calls
 *   
 */
 #include "../include/parse.h"
 
-// Parses each file in a given array of filenames
-void Parser::parse(char* files[], int nfiles) {
+void Parser::parse(string inputfile) {
 
-    int status; 
-
-    // Parse each file separately
-    for(int i=0; i < nfiles; i++) {
-        parse_file(files[i]);
+    // Choose correct input
+    istream *in = &cin;
+    ifstream infile;
+    if(inputfile != "pipe") {
+        infile.open(inputfile, ifstream::in);
+        if(!infile.is_open()) throw runtime_error("Couldn't open selected inputfile!");
+		in = &infile;
     }
-    return;
-}
 
-// Parses one file completely
-void Parser::parse_file(char* file) {
-
-    // Create filestream from given filename
-    ifstream infile(file);
-    
     // Parse rules
-    parse_rules(infile);
+    parse_rules(*in);
 
     // Parse symbol table
-    parse_symbol_table(infile);
+    parse_symbol_table(*in);
 
     // Parse compute statements
-    parse_compute(infile);
-    this->translator->translate_values();
+    parse_compute(*in);
+
+    // Merge SAT and translated constraints
     this->translator->merge();
 
-    // Close file
     infile.close();
     return;
 }
 
 // Parses the rules
-void Parser::parse_rules(ifstream &infile) {
+void Parser::parse_rules(istream& in) {
 
     int curr;
     string line;
 
     // Parse first time to get highest variable number
-    while(getline(infile, line)) {
+    /*while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
 
@@ -71,10 +63,11 @@ void Parser::parse_rules(ifstream &infile) {
     }
 
     // Go back to begin
-    infile.seekg(0, ios::beg);
+    in.seekg(0, ios::beg);*/
+    this->translator->highest = 3;
 
     // Parse second time to translate
-    while(getline(infile, line)) {
+    while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
 
@@ -90,10 +83,13 @@ void Parser::parse_rules(ifstream &infile) {
 }
 
 // Parses the symbol table
-void Parser::parse_symbol_table(ifstream &infile) {
+void Parser::parse_symbol_table(istream& in) {
 
     // Initialise the symbol table
     this->translator->symbol_table = new char[this->translator->highest];
+
+    // Add dividor zero to the SAT stream
+    this->translator->to_sat << "0" << '\n';
 
     int curr;
     char curr_symbol;
@@ -103,11 +99,13 @@ void Parser::parse_symbol_table(ifstream &infile) {
     for(int i = 0; ; i++){
 
         if(!was_hidden){
-            if(getline(infile, line)) {
+            if(getline(in, line)) {
                 istringstream iss(line);
                 iss>>curr;
                 iss>>curr_symbol;
                 if(curr == ZERO_RULE) break;
+                // Add the line to the SAT stream
+                this->translator->to_sat << line << '\n';
             } else break;
         }
 
@@ -122,45 +120,49 @@ void Parser::parse_symbol_table(ifstream &infile) {
 }
 
 // Parses the compute statements
-void Parser::parse_compute(ifstream &infile) {
+void Parser::parse_compute(istream& in) {
 
-    // Initialise the values array
-    this->translator->values = new int[this->translator->highest];
-    for(int i = 0; i < this->translator->highest; i++) {
-        this->translator->values[i] = 2;
-    }
+    // Add the zero to the SAT stream
+    this->translator->to_sat << "0" << '\n';
 
     int curr;
     string line;
     
     // Skip the 'B+'
-    getline(infile, line);
+    getline(in, line);
+    // Add it to the SAT stream
+    this->translator->to_sat << "B+" << '\n';
 
-    // Get the positives
-    while(getline(infile, line)) {
+    // Translate the positives
+    while(getline(in, line)) {
+        this->translator->to_sat << line << '\n';
         istringstream iss(line);
         iss>>curr;
 
         if(curr == ZERO_RULE) break;
-        else this->translator->values[curr-1] = true;
+        else this->translator->translate_value(curr, true);
     }
 
     // Skip the 'B-'
-    getline(infile, line);
+    getline(in, line);
+    // Add it to the SAT stream
+    this->translator->to_sat << "B-" << '\n';
 
-    // Get the negatives
-    while(getline(infile, line)) {
+    // Translate the negatives
+    while(getline(in, line)) {
+        this->translator->to_sat << line << '\n';
         istringstream iss(line);
         iss>>curr;
 
         if(curr == ZERO_RULE) break;
-        else this->translator->values[curr-1] = false;
+        else this->translator->translate_value(curr, false);
     }
 
     // Get the amount of models
-    getline(infile, line);
+    getline(in, line);
     istringstream iss(line);
     iss>>this->translator->amount_of_models;
+    this->translator->to_sat << this->translator->amount_of_models << '\n';
 
     return;
 }

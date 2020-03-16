@@ -24,10 +24,9 @@ class Parser {
     void parse_max(int amount, istringstream &iss);
 
     // Parse hierarchy
-    void parse_file(char* file);
-    void parse_rules(ifstream &infile);
-    void parse_symbol_table(ifstream &infile);
-    void parse_compute(ifstream &infile);
+    void parse_rules(istream& in);
+    void parse_symbol_table(istream& in);
+    void parse_compute(istream& in);
 
 
     public: 
@@ -35,7 +34,7 @@ class Parser {
     // Translator
     Translator *translator;
 
-    void parse(char* files[], int nfiles);
+    void parse(string inputfile);
 
 };
 

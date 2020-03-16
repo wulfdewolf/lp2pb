@@ -1,6 +1,6 @@
 /*
 *
-*   TRANSLATOR: handles translation of the different rule types
+*   TRANSLATOR
 *
 *
 *   --> some utility methods are implemented at the bottom
@@ -12,6 +12,24 @@
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
 void Translator::merge() {
+
+    // DEBUG --------------- Display current constraints
+    cout << "IN CONSTRAINTS: \n\n";
+    while(this->constraints.rdbuf()->in_avail() != 0){
+        string line;
+        getline(this->constraints, line);
+        cout << line << '\n';
+    }
+    // DEBUG ---------------
+
+    // DEBUG --------------- Display current to_sat
+    cout << "\n\nIN SAT: \n\n";
+    while(this->to_sat.rdbuf()->in_avail() != 0){
+        string line;
+        getline(this->to_sat, line);
+        cout << line << '\n';
+    }
+    // DEBUG ---------------
 
     // Command to execute
     char cmd[16] = "sat/lp2sat-1.24";
@@ -34,49 +52,23 @@ void Translator::merge() {
     // DEBUG ---------------- 
 }
 
-void Translator::translate_sat() {
+void Translator::translate_value(int index, int sign) {
 
+    switch(sign) {            
+        case 0: 
+            this->constraints << "~x" << index << " >= " << 1 << ";" << '\n';
+            this->amount_of_constraints++;
+            break;
+        case 1: 
+            this->constraints << 'x' << index << " >= " << 1 << ";" << '\n';
+            this->amount_of_constraints++;
+            break;
+        case 2:
+            break;
+    }
 }
 
-void Translator::translate_values() {
-
-    // Loop over all parsed values and add the corresponding constraints
-    for(int i = 0; i < highest; i++) {
-
-        switch(this->values[i]) {            
-            case 0: 
-                this->constraints << "~x" << i << " >= " << 1 << ";" << '\n';
-                this->amount_of_constraints++;
-                break;
-            case 1: 
-                this->constraints << 'x' << i << " >= " << 1 << ";" << '\n';
-                this->amount_of_constraints++;
-                break;
-            case 2:
-                break;
-        }
-    }
-
-    // DEBUG --------------- Display current constraints
-    cout << "IN CONSTRAINTS: \n\n";
-    while(this->constraints.rdbuf()->in_avail() != 0){
-        string line;
-        getline(this->constraints, line);
-        cout << line << '\n';
-    }
-    // DEBUG ---------------
-
-    // DEBUG --------------- Display current to_sat
-    cout << "\n\nIN SAT: \n\n";
-    while(this->to_sat.rdbuf()->in_avail() != 0){
-        string line;
-        getline(this->to_sat, line);
-        cout << line << '\n';
-    }
-    // DEBUG ---------------
-}
-
-void Translator::translate_basic(istringstream &iss, string line) {
+void Translator::translate_sat(istringstream &iss, string line) {
 
     // basic rules are completely translated to sat
     this->to_sat << line << '\n';
@@ -126,14 +118,6 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     // --> invert all weights
     fill_n(weights, literals, -1);
     add_constraint_with_extra(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
-
-    return;
-}
-
-void Translator::translate_choice(istringstream &iss, string line) {
-
-    // choice rules are completely translated to sat
-    this->to_sat << line << '\n';
 
     return;
 }

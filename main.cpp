@@ -23,10 +23,10 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option) {
 
 int main(int argc, char* argv[]) {
 
-    if(argc < 2) {
-        cout << "Usage: ./lp2pb inputfile1 inputfile2 ..." << endl;
+    if(argc !=  4 && argc != 2 && argc != 1) {
+        cout << "Usage: ./lp2pb <inputfile1> <-o outputfile>" << endl;
 
-    } else {
+    } else if{
 
         Executor executor;
         Translator translator;
@@ -35,8 +35,18 @@ int main(int argc, char* argv[]) {
         parser.translator = &translator;
         translator.executor = &executor;
 
-        parser.parse(argv+1, argc-1);
-    }
+        string inputfile = "pipe";
+    
+        if(argc == 4) {
+            if(cmdOptionExists(argv+1, argv+argc, "-o")) {
+                translator.outputfile = getCmdOption(argv+1, argv+argc, "-o");
+                inputfile = argv[1];
+            } else cout << "Usage: ./lp2pb <inputfile1> <-o outputfile>" << endl;
+        } else if(argc == 2) {
+            inputfile = argv[1];
+        }
 
+        parser.parse(inputfile);
+    }
     return 0;
 }

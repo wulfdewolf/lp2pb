@@ -23,45 +23,45 @@ class Translator {
     void add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
     void add_constraint(int variables[], int weights[], int negatives, int positives, int value);
 
+
+    public: 
+
     // Streams
     stringstream constraints;
     stringstream to_sat;
 
-
-    public: 
-
     // Executor
     Executor *executor;
+
+    // Output
+    string outputfile = "pipe";
 
     int highest = 1;
     int amount_of_constraints = 0;
     int amount_of_models;
     char* symbol_table;
-    int* values;
 
     // Specific translation per rule type
     void translate_zero(istringstream &iss, string line);
-    void translate_basic(istringstream &iss, string line);
+    void translate_sat(istringstream &iss, string line);
     void translate_constraint(istringstream &iss, string line);
-    void translate_choice(istringstream &iss, string line);
     void translate_weight(istringstream &iss, string line);
     void translate_min_max(istringstream &iss, string line);
 
     // Rule translation function container
     typedef void (Translator::*rule_translator)(istringstream &iss, string line);
 
-    rule_translator rule_translation_functions[6] = { &Translator::translate_basic, 
+    rule_translator rule_translation_functions[6] = { &Translator::translate_sat, 
                                                       &Translator::translate_constraint,
-                                                      &Translator::translate_choice,
+                                                      &Translator::translate_sat,
                                                       &Translator::translate_zero,
                                                       &Translator::translate_weight,
                                                       &Translator::translate_min_max };
 
     // Values
-    void translate_values();
+    void translate_value(int index, int sign);
 
     // Call to lp2sat and merge
-    void translate_sat();
     void merge();
 
 };
