@@ -53,33 +53,39 @@ void Parser::parse_rules(istream& in) {
     while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
-        if(curr == ZERO_RULE) break;
-        // Translate basic and choice rules immediately
-        else if(curr == BASIC || curr == CHOICE) this->translator->translate_sat(iss, line);
-        else if(curr == MINIMIZE) this->translator->translate_min_max(iss, line);
-        // Store the rest for later translation --> when highest is known
+
+        if(curr < 0 || curr > 6) throw runtime_error("Unknow rule type in input file!");
+        else if(curr == ZERO_RULE) break;
+        // Translate basic, choice and minimize rules immediately
+        else if(curr == BASIC || curr == CHOICE) this->translator->translate_sat(line);
+        else if(curr == MINIMIZE) this->translator->translate_minimize(iss);
+        // Store the rest for later translation --> when highest variable number is known
         else temp << line << '\n';
 
         // Only read the literal parts for the highest number, skip minimize rules
-        if(curr == MINIMIZE) continue;
-        else if(curr == CHOICE || curr == WEIGHT) skip(3, iss);
-        else skip(2, iss);
+        switch(curr) {
+            case MINIMIZE: 
+                continue;
+            case WEIGHT: 
+                skip(3, iss);
+                break;
+            case CHOICE:
+                // Also read the heads
+                iss>>curr;
+                parse_max(curr, iss);
+            default:
+                skip(2, iss);
+        }
         parse_max(curr, iss);
     }
-
 
     // Parse stored rules to translate now highest is known
     while(getline(temp, line)) {
         istringstream iss(line);
         iss>>curr;
 
-        if(curr < 0 || curr > 6) throw runtime_error("Unknow rule type in input file!");
-        else if(curr == ZERO_RULE) return;
-        else {
-            // Reference in the method array using the rule type to get matching translation function
-            Translator::rule_translator translation_function = this->translator->rule_translation_functions[curr-1];
-            (this->translator->*translation_function)(iss, line);
-        }
+        if(curr == WEIGHT) this->translator->translate_weight(iss);
+        else this->translator->translate_constraint(iss);
     }
     return;
 }
@@ -184,10 +190,7 @@ void Parser::parse_max(int amount, istringstream &iss) {
     int curr;
     for(int i = 0; i < amount; i++) {
         iss>>curr;
-        cout << curr;
-        cout << "nana";
         this->translator->highest = max(this->translator->highest, curr);
     }
-    cout << '\n';
     return;
 }

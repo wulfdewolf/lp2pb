@@ -68,7 +68,7 @@ void Translator::translate_value(int index, int sign) {
     }
 }
 
-void Translator::translate_sat(istringstream &iss, string line) {
+void Translator::translate_sat(string line) {
 
     // basic rules are completely translated to sat
     this->to_sat << line << '\n';
@@ -76,7 +76,7 @@ void Translator::translate_sat(istringstream &iss, string line) {
     return;
 }
 
-void Translator::translate_constraint(istringstream &iss, string line) {
+void Translator::translate_constraint(istringstream &iss) {
 
     /*
     *   Get rule data
@@ -122,11 +122,7 @@ void Translator::translate_constraint(istringstream &iss, string line) {
     return;
 }
 
-void Translator::translate_zero(istringstream &iss, string line) {
-    return;
-}
-
-void Translator::translate_weight(istringstream &iss, string line) {
+void Translator::translate_weight(istringstream &iss) {
 
     /*
     *   Get rule data
@@ -181,7 +177,7 @@ void Translator::translate_weight(istringstream &iss, string line) {
     return;
 }
 
-void Translator::translate_min_max(istringstream &iss, string line) {
+void Translator::translate_minimize(istringstream &iss) {
 
     /*
     *   Get rule data

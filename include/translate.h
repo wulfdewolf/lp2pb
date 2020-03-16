@@ -25,7 +25,7 @@ class Translator {
         add_series(names, weights, start, end, sign, this->constraints);
     }
     void add_series(int names[], int weights[], int start, int end, bool sign, stringstream &iss);
-    
+
     void add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
     void add_constraint(int variables[], int weights[], int negatives, int positives, int value);
 
@@ -51,21 +51,10 @@ class Translator {
     char* symbol_table;
 
     // Specific translation per rule type
-    void translate_zero(istringstream &iss, string line);
-    void translate_sat(istringstream &iss, string line);
-    void translate_constraint(istringstream &iss, string line);
-    void translate_weight(istringstream &iss, string line);
-    void translate_min_max(istringstream &iss, string line);
-
-    // Rule translation function container
-    typedef void (Translator::*rule_translator)(istringstream &iss, string line);
-
-    rule_translator rule_translation_functions[6] = { &Translator::translate_sat, 
-                                                      &Translator::translate_constraint,
-                                                      &Translator::translate_sat,
-                                                      &Translator::translate_zero,
-                                                      &Translator::translate_weight,
-                                                      &Translator::translate_min_max };
+    void translate_sat(string line);
+    void translate_constraint(istringstream &iss);
+    void translate_weight(istringstream &iss);
+    void translate_minimize(istringstream &iss);
 
     // Values
     void translate_value(int index, int sign);
