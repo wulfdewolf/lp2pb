@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     if(argc !=  4 && argc != 2 && argc != 1) {
         cout << "Usage: ./lp2pb <inputfile1> <-o outputfile>" << endl;
 
-    } else if{
+    } else {
 
         Executor executor;
         Translator translator;
