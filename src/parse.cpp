@@ -49,7 +49,7 @@ void Parser::parse_rules(istream& in) {
     string line;
 
     // Parse first time to get highest variable number
-    /*while(getline(in, line)) {
+    while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
 
@@ -63,8 +63,9 @@ void Parser::parse_rules(istream& in) {
     }
 
     // Go back to begin
-    in.seekg(0, ios::beg);*/
-    this->translator->highest = 3;
+    in.clear();
+    in.seekg(0, ios::beg);
+    //this->translator->highest = 3;
 
     // Parse second time to translate
     while(getline(in, line)) {

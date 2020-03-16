@@ -1,6 +1,6 @@
 /*
 *
-*   TRANSLATOR
+*   TRANSLATOR: handles translation
 *
 *
 *   --> some utility methods are implemented at the bottom
@@ -201,10 +201,10 @@ void Translator::translate_min_max(istringstream &iss, string line) {
     /*
     *   Add correct parts to streams
     */ 
-    this->constraints << "min: ";
-    add_series(variables, weights, 0, negatives, 0);
-    add_series(variables, weights, negatives, positives+1, 1);
-    this->constraints << ";\n";
+    this->minimize << "min: ";
+    add_series(variables, weights, 0, negatives, 0, this->minimize);
+    add_series(variables, weights, negatives, positives+1, 1, this->minimize);
+    this->minimize << ";\n";
 
     return;
 }
@@ -231,26 +231,26 @@ void Translator::add_sat(int rule[], int amount) {
     }
 }
 
-void Translator::add_single(int name, int weight, bool sign) {
+void Translator::add_single(int name, int weight, bool sign, stringstream &iss) {
 
     // Sign
-    if(weight < 0) this->constraints << "-";
-    else this->constraints << "+";
+    if(weight < 0) iss << "-";
+    else iss << "+";
 
     // Weight
-    this->constraints << abs(weight);
+    iss << abs(weight);
         
     // Symbol
     const char* var_name = " ~x";
     if(sign) var_name = " x";
-    this->constraints << var_name << name << " ";
+    iss << var_name << name << " ";
 
     return;
 }
 
-void Translator::add_series(int names[], int weights[], int start, int end, bool sign) {
+void Translator::add_series(int names[], int weights[], int start, int end, bool sign, stringstream &iss) {
     for(int i = start; i < end; i++) {
-        add_single(names[i], weights[i], sign);
+        add_single(names[i], weights[i], sign, iss);
     }
     return;
 }
@@ -258,7 +258,7 @@ void Translator::add_series(int names[], int weights[], int start, int end, bool
 void Translator::add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign) {
 
     add_series(variables, weights, 0, negatives, 0);
-    add_single(extra, extra_weight, extra_sign);
+    add_single(extra, extra_weight, extra_sign, this->constraints);
     add_series(variables, weights, negatives, positives+1, 1);
     this->constraints << ">= " << value << ';' << '\n';
 
