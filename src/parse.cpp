@@ -47,28 +47,29 @@ void Parser::parse_rules(istream& in) {
 
     int curr;
     string line;
+    stringstream temp;
 
-    // Parse first time to get highest variable number
+    // Parse first time to get highest variable number and pass simple stuff to lp2sat
     while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
-
-        // Only read the literal parts
         if(curr == ZERO_RULE) break;
+        // Translate basic and choice rules immediately
+        else if(curr == BASIC || curr == CHOICE) this->translator->translate_sat(iss, line);
+        else if(curr == MINIMIZE) this->translator->translate_min_max(iss, line);
+        // Store the rest for later translation --> when highest is known
+        else temp << line << '\n';
+
+        // Only read the literal parts for the highest number, skip minimize rules
+        if(curr == MINIMIZE) continue;
         else if(curr == CHOICE || curr == WEIGHT) skip(3, iss);
         else skip(2, iss);
-
-        iss>>curr;
         parse_max(curr, iss);
     }
 
-    // Go back to begin
-    in.clear();
-    in.seekg(0, ios::beg);
-    //this->translator->highest = 3;
 
-    // Parse second time to translate
-    while(getline(in, line)) {
+    // Parse stored rules to translate now highest is known
+    while(getline(temp, line)) {
         istringstream iss(line);
         iss>>curr;
 
@@ -183,7 +184,10 @@ void Parser::parse_max(int amount, istringstream &iss) {
     int curr;
     for(int i = 0; i < amount; i++) {
         iss>>curr;
+        cout << curr;
+        cout << "nana";
         this->translator->highest = max(this->translator->highest, curr);
     }
+    cout << '\n';
     return;
 }
