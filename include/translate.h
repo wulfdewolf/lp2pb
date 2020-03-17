@@ -7,6 +7,7 @@
 #include <string>
 
 #include "execute.h"
+#include "util.h"
 
 using namespace std;
 
@@ -16,6 +17,7 @@ class Translator {
     private:
 
     // Utility
+    void get_problem_line(stringstream &iss);
     void read_literals(int array[], int amount, istringstream &iss);
     void add_sat(int rule[], int amount);
     void add_single(int name, int weight, bool sign, stringstream &iss);
@@ -25,9 +27,7 @@ class Translator {
         add_series(names, weights, start, end, sign, this->constraints);
     }
     void add_series(int names[], int weights[], int start, int end, bool sign, stringstream &iss);
-
-    void add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
-    void add_constraint(int variables[], int weights[], int negatives, int positives, int value);
+    void add_constraint(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
 
     // Mininimise statement
     stringstream minimize;

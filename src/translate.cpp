@@ -13,43 +13,80 @@
 //-----------------------------------------------------------------------------
 void Translator::merge() {
 
-    // DEBUG --------------- Display current constraints
-    cout << "IN CONSTRAINTS: \n\n";
-    while(this->constraints.rdbuf()->in_avail() != 0){
-        string line;
-        getline(this->constraints, line);
-        cout << line << '\n';
-    }
-    // DEBUG ---------------
 
-    // DEBUG --------------- Display current to_sat
-    cout << "\n\nIN SAT: \n\n";
-    while(this->to_sat.rdbuf()->in_avail() != 0){
-        string line;
-        getline(this->to_sat, line);
-        cout << line << '\n';
-    }
-    // DEBUG ---------------
+    // Commands to execute
+    char cmd_normal[] = "./lp2normal/lp2normal-2.27";
+    char cmd_sat[] = "./sat/lp2sat-1.24";
 
-    // Command to execute
-    char cmd[16] = "sat/lp2sat-1.24";
+    // Output streams
+    stringstream output_normal;
+    stringstream output_sat;
 
-    // DEBUG ---------------- will be to_sat
-    ifstream infile("test");
-    // DEBUG ----------------
+    this->executor->exec(cmd_normal, this->to_sat, output_normal);
+    this->executor->exec(cmd_sat, output_normal, output_sat);
 
-    // Output written to stringstream
-    stringstream output;
-
-    //this->executor->exec(cmd, infile, output);
+     /* string linee;
 
     // DEBUG ---------------- print output
-    string linee;
-    while(output.good()) {
-      getline(output, linee);
+    cout << "\n\nOUTPUT: \n\n";
+    while(output_sat.rdbuf()->in_avail()) {
+      getline(output_sat, linee);
       cout << linee << '\n';
     }
-    // DEBUG ---------------- 
+    // DEBUG ---------------- */
+
+
+    // Translate generated output to the constraints
+
+    string line;
+    int curr;
+
+    // Get variable and constraint number
+    getline(output_sat, line);
+    get_problem_line(output_sat);
+
+    // Now start translating the clauses
+    string symbol;
+    while(getline(output_sat, line)) {
+        istringstream iss(line);
+        if(line == "") break;
+
+        while(iss.good()) {
+            iss>>curr;
+
+            // Skip comment lines
+            if(line[0] == 'c') break;
+            // Linebreak when end of rule is reached
+            else if(curr == 0) this->constraints << ">= 1;\n";
+            else add_single(abs(curr), 1, curr>0, this->constraints);
+        }
+    }
+
+    // Read into correct output + add minimize and meta lines
+
+    ostream *out = &cout;
+    fstream outputfile;
+    // If an outputfile-name was provided
+    if(this->outputfile != "pipe") {
+        // try to open it
+        outputfile.open(this->outputfile, std::fstream::in | std::fstream::out | std::fstream::app);
+        // create it if it doesn't exist
+        if(!outputfile) outputfile.open(this->outputfile, fstream::in | fstream::out | fstream::trunc);
+    }
+
+    // Add the meta line
+    *out << "* #variable= " << this->highest << " #constraints= " << this->amount_of_constraints << '\n';
+
+    // Add minimize line
+    getline(this->minimize, line);
+    *out << line << '\n';
+
+    // Add all the constraints
+    while(this->constraints.rdbuf()->in_avail() != 0){
+        getline(this->constraints, line);
+        *out << line << '\n';
+    }
+    if(this->outputfile != "pipe") outputfile.close();
 }
 
 void Translator::translate_value(int index, int sign) {
@@ -66,7 +103,7 @@ void Translator::translate_value(int index, int sign) {
 
 void Translator::translate_sat(string line) {
 
-    // basic rules are completely translated to sat
+    // Rules without aggregates are completely translated to sat
     this->to_sat << line << '\n';
 
     return;
@@ -107,13 +144,13 @@ void Translator::translate_constraint(istringstream &iss) {
 
     // All weights are 1 here so we don't need to calculate the sum
     fill_n(weights, literals, 1);
-    add_constraint_with_extra(variables, weights, negatives, positives, bound, new_var, bound, 0);
+    add_constraint(variables, weights, negatives, positives, bound, new_var, bound, 0);
     
     // X = false constraint
 
     // --> invert all weights
     fill_n(weights, literals, -1);
-    add_constraint_with_extra(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
+    add_constraint(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
 
     return;
 }
@@ -158,7 +195,7 @@ void Translator::translate_weight(istringstream &iss) {
     for(int i = 0; i < literals; i++) {
         if(weights[i] < 0) sum_neg_weights += weights[i];
     }
-    add_constraint_with_extra(variables, weights, negatives, positives, bound, new_var, abs(sum_neg_weights-bound), 0);
+    add_constraint(variables, weights, negatives, positives, bound, new_var, abs(sum_neg_weights-bound), 0);
     
     // X = false constraint
 
@@ -168,7 +205,7 @@ void Translator::translate_weight(istringstream &iss) {
         if(weights[i] >= 0) sum_pos_weights += weights[i];
         weights[i] = -weights[i];
     }
-    add_constraint_with_extra(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-sum_pos_weights+bound-1), 1);
+    add_constraint(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-sum_pos_weights+bound-1), 1);
 
     return;
 }
@@ -205,6 +242,10 @@ void Translator::translate_minimize(istringstream &iss) {
 //-----------------------------------------------------------------------------
 //                                  UTILITY
 //-----------------------------------------------------------------------------
+void Translator::get_problem_line(stringstream &iss) {
+
+}
+
 void Translator::read_literals(int array[], int amount, istringstream &iss) {
     for(int i = 0; i < amount; i++) {
         iss>>array[i];
@@ -247,20 +288,10 @@ void Translator::add_series(int names[], int weights[], int start, int end, bool
     return;
 }
 
-void Translator::add_constraint_with_extra(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign) {
+void Translator::add_constraint(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign) {
 
     add_series(variables, weights, 0, negatives, 0);
     add_single(extra, extra_weight, extra_sign, this->constraints);
-    add_series(variables, weights, negatives, positives+1, 1);
-    this->constraints << ">= " << value << ';' << '\n';
-
-    // Increase counter
-    this->amount_of_constraints++;
-}
-
-void Translator::add_constraint(int variables[], int weights[], int negatives, int positives, int value) {
-
-    add_series(variables, weights, 0, negatives, 0);
     add_series(variables, weights, negatives, positives+1, 1);
     this->constraints << ">= " << value << ';' << '\n';
 

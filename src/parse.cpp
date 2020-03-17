@@ -178,14 +178,6 @@ void Parser::parse_compute(istream& in) {
 //-----------------------------------------------------------------------------
 //                                  UTILITY
 //-----------------------------------------------------------------------------
-void Parser::skip(int amount, istringstream &iss) {
-    int curr;
-    for(int i = 0; i < amount; i++) {
-        iss>>curr;
-    }
-    return;
-}
-
 void Parser::parse_max(int amount, istringstream &iss) {
     int curr;
     for(int i = 0; i < amount; i++) {

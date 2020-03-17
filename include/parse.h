@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "translate.h"
+#include "util.h"
 
 using namespace std;
 
@@ -19,8 +20,7 @@ class Parser {
 
     private:
 
-    // Utility
-    void skip(int amount, istringstream &iss);
+    // Specific utility
     void parse_max(int amount, istringstream &iss);
 
     // Parse hierarchy

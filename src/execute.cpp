@@ -23,7 +23,7 @@ void Executor::read_from_pipe (int file_descriptor, ostream &output) {
 
     while(stream.good()) {
         getline(stream, line);
-        output << line << '\n';
+        output << line << '\n'; 
     }
 }
 
