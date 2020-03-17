@@ -34,7 +34,7 @@ void Executor::exec(char *cmd, istream &input, ostream &output) {
     pipe(pipes[PARENT_WRITE_PIPE]);
      
     if(!fork()) {
-        char *argv[]={ cmd };
+        char *argv[]={ cmd , NULL};
  
         dup2(CHILD_READ_FD, STDIN_FILENO);  
         dup2(CHILD_WRITE_FD, STDOUT_FILENO);
@@ -48,11 +48,6 @@ void Executor::exec(char *cmd, istream &input, ostream &output) {
         execv(argv[0], argv);
 
     } else {
-
-        // BUG: for some reason nothing works if this buffer isn't allocated with atleast
-        //      2000 elements
-        // WEIRD --> it is never used, so probably some memory bug
-        char buffer[5000];
  
         // Close unused (parent)   
         close(CHILD_READ_FD);

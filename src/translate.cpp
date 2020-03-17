@@ -15,15 +15,15 @@ void Translator::merge() {
 
 
     // Commands to execute
-    char cmd_normal[] = "./executables/lp2normal/lp2normal-2.18";
-    char cmd_lp[] = "./executables/lp2lp/lp2lp2-1.23";
-    char cmd_sat[] = "./executables/lp2sat/lp2sat-1.24";
+    char cmd_normal[] =  "./executables/lp2normal/lp2normal-2.18";
+    char cmd_lp[] =  "./executables/lp2lp/lp2lp2-1.23";
+    char cmd_sat[] =  "./executables/lp2sat/lp2sat-1.24";
 
     // Output streams
     stringstream output_normal;
     stringstream output_lp;
     stringstream output_sat;
-
+    
     this->executor->exec(cmd_normal, this->to_sat, output_normal);
     this->executor->exec(cmd_lp, output_normal, output_lp);
     this->executor->exec(cmd_sat, output_lp, output_sat);
@@ -105,11 +105,13 @@ void Translator::translate_constraint(istringstream &iss) {
     /*
     *   Get rule data
     */ 
-    int head, literals, negatives, positives, bound;
+    int head, literals, negatives = 0, positives = 0, bound;
     iss>>head;
     iss>>literals;
-    iss>>negatives;
-    positives = literals - negatives;
+    if(literals) {
+        iss>>negatives;
+        positives = literals - negatives;
+    }
     iss>>bound;
 
     // Read the arrays of variables
@@ -151,12 +153,14 @@ void Translator::translate_weight(istringstream &iss) {
     /*
     *   Get rule data
     */ 
-    int head, bound, literals, negatives, positives;
+    int head, bound, literals, negatives = 0, positives = 0;
     iss>>head;
     iss>>bound;
     iss>>literals;
-    iss>>negatives;
+    if(literals) {
+        iss>>negatives;
     positives = literals - negatives;
+    }
 
     // Read the arrays of variables + their weights
     int variables[literals];
