@@ -15,35 +15,23 @@ void Translator::merge() {
 
 
     // Commands to execute
-    char cmd_normal[] = "./lp2normal/lp2normal-2.27";
-    char cmd_sat[] = "./sat/lp2sat-1.24";
+    char cmd_normal[] = "./executables/lp2normal/lp2normal-2.18";
+    char cmd_lp[] = "./executables/lp2lp/lp2lp2-1.23";
+    char cmd_sat[] = "./executables/lp2sat/lp2sat-1.24";
 
     // Output streams
     stringstream output_normal;
+    stringstream output_lp;
     stringstream output_sat;
 
     this->executor->exec(cmd_normal, this->to_sat, output_normal);
-    this->executor->exec(cmd_sat, output_normal, output_sat);
-
-     /* string linee;
-
-    // DEBUG ---------------- print output
-    cout << "\n\nOUTPUT: \n\n";
-    while(output_sat.rdbuf()->in_avail()) {
-      getline(output_sat, linee);
-      cout << linee << '\n';
-    }
-    // DEBUG ---------------- */
-
+    this->executor->exec(cmd_lp, output_normal, output_lp);
+    this->executor->exec(cmd_sat, output_lp, output_sat);
 
     // Translate generated output to the constraints
 
     string line;
     int curr;
-
-    // Get variable and constraint number
-    getline(output_sat, line);
-    get_problem_line(output_sat);
 
     // Now start translating the clauses
     string symbol;
@@ -55,10 +43,15 @@ void Translator::merge() {
             iss>>curr;
 
             // Skip comment lines
-            if(line[0] == 'c') break;
+            if(line[0] == 'c' || line[0] == 'p') break;
             // Linebreak when end of rule is reached
-            else if(curr == 0) this->constraints << ">= 1;\n";
-            else add_single(abs(curr), 1, curr>0, this->constraints);
+            else if(curr == 0) {
+                this->constraints << ">= 1;\n";
+                this->amount_of_constraints++;
+            } else {
+                this->highest = max(this->highest, abs(curr));
+                add_single(abs(curr), 1, curr>0, this->constraints);
+            }
         }
     }
 
@@ -68,10 +61,8 @@ void Translator::merge() {
     fstream outputfile;
     // If an outputfile-name was provided
     if(this->outputfile != "pipe") {
-        // try to open it
         outputfile.open(this->outputfile, std::fstream::in | std::fstream::out | std::fstream::app);
-        // create it if it doesn't exist
-        if(!outputfile) outputfile.open(this->outputfile, fstream::in | fstream::out | fstream::trunc);
+        out = &outputfile;
     }
 
     // Add the meta line
