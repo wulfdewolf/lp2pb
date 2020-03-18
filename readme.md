@@ -1,11 +1,11 @@
-## lp2pb
+# lp2pb
 
 a translation tool that translates ASP programs to PB constrains
 
 
-### Manual
+## Manual
 
-## Compiling
+### Compiling
 
 To compile the application, first clone the repository to your machine.
 Open a terminal and navigate to the cloned folder, there call:
@@ -13,7 +13,7 @@ Open a terminal and navigate to the cloned folder, there call:
 make
 ```
 
-## Running
+### Running
 
 Once compiled the executable can be used. 
 Make sure to give it execution rights:
@@ -27,4 +27,4 @@ To run the application:
 ```
 Input and output files are optional, if not provided standard input and output is used.
 
-## Executables
+### Executables
