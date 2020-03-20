@@ -108,10 +108,8 @@ void Translator::translate_constraint(istringstream &iss) {
     int head, literals, negatives = 0, positives = 0, bound;
     iss>>head;
     iss>>literals;
-    if(literals) {
-        iss>>negatives;
-        positives = literals - negatives;
-    }
+    iss>>negatives;
+    positives = literals - negatives;
     iss>>bound;
 
     // Read the arrays of variables
@@ -285,9 +283,9 @@ void Translator::add_series(int names[], int weights[], int start, int end, bool
 
 void Translator::add_constraint(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign) {
 
-    add_series(variables, weights, 0, negatives, 0);
+    if(negatives) add_series(variables, weights, 0, negatives, 0);
     add_single(extra, extra_weight, extra_sign, this->constraints);
-    add_series(variables, weights, negatives, positives+1, 1);
+    if(positives) add_series(variables, weights, negatives, negatives+positives, 1);
     this->constraints << ">= " << value << ';' << '\n';
 
     // Increase counter
