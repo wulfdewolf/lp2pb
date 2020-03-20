@@ -7,19 +7,15 @@ a translation tool that translates ASP programs to PB constrains
 
 ### Compilation
 
-To compile the application, first clone the repository to your machine.
-Open a terminal and navigate to the cloned folder, there call:
+The translator consists of multiple c++ files.
+Install 'make' and call it inside the root folder.
 ```shell
 make
 ```
 
-### Running
+### Usage
 
-Once compiled the executable can be used. 
-Make sure to give it execution rights:
-```shell
-chmod +x lp2pb
-```
+The translator expects smodels input, [see here](http://www.tcs.hut.fi/Software/smodels/lparse.ps.gz).
 
 To run the application:
 ```
@@ -28,3 +24,5 @@ To run the application:
 Input and output files are optional, if not provided standard input and output is used.
 
 ### Executables
+
+### Citation
