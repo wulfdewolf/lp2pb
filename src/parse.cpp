@@ -93,9 +93,6 @@ void Parser::parse_rules(istream& in) {
 // Parses the symbol table
 void Parser::parse_symbol_table(istream& in) {
 
-    // Initialise the symbol table
-    //this->translator->symbol_table = new char[this->translator->highest];
-
     // Add dividor zero to the SAT stream
     this->translator->to_sat << "0" << '\n';
 
@@ -116,14 +113,6 @@ void Parser::parse_symbol_table(istream& in) {
                 this->translator->to_sat << line << '\n';
             } else break;
         }
-
-       /* if(curr == i + 1) {
-            this->translator->symbol_table[i] = curr_symbol;
-            was_hidden = false;
-        } else {
-            this->translator->symbol_table[i] = '/';
-            was_hidden = true;
-        }*/
     }
 }
 
