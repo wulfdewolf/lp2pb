@@ -1,6 +1,6 @@
 # lp2pb
 
-a translation tool that translates ASP programs to PB constrains
+Lp2pb is a translation tool that translates ground ASP (smodels) to PB-constraints (.opb).
 
 
 ## Manual (linux)
