@@ -33,7 +33,11 @@ void Parser::parse(string inputfile) {
     parse_symbol_table(*in);
 
     // Parse compute statements
-    parse_compute(*in);
+    parse_compute(*in, 1);
+    parse_compute(*in, 0);
+
+    // Parse amount of models
+    parse_amount_of_models(*in);
 
     // Merge SAT and translated constraints
     this->translator->merge();
@@ -56,27 +60,54 @@ void Parser::parse_rules(istream& in) {
 
         if(curr < 0 || curr > 6) throw runtime_error("Unknow rule type in input file!");
         else if(curr == ZERO_RULE) break;
-        // Translate basic, choice and minimize rules immediately
-        else if(curr == BASIC || curr == CHOICE) this->translator->translate_sat(line);
         else if(curr == MINIMIZE) this->translator->translate_minimize(iss);
-        // Store the rest for later translation --> when highest variable number is known
-        else temp << line << '\n';
+        // Translate basic, choice and minimize rules immediately + GET HIGHEST
+        else if(curr == BASIC || curr == CHOICE) {
+            this->translator->translate_sat(line);
 
-        // Only read the literal parts for the highest number, skip minimize rules
-        switch(curr) {
-            case MINIMIZE: 
-                continue;
-            case WEIGHT: 
-                skip(3, iss);
-                break;
-            case CHOICE:
-                // Also read the heads
+            if(curr == BASIC) {
+                // head
+                iss>>curr;
+                this->translator->highest = max(curr, this->translator->highest);
+                // literals
+                iss>>curr;
+                // #negatives
+                skip(1, iss);
+                parse_max(curr, iss);
+            } else {
+                // heads
                 iss>>curr;
                 parse_max(curr, iss);
-            default:
+                // literals
+                iss>>curr;
+                // #negatives
+                skip(1, iss);
+                parse_max(curr, iss);
+            }
+        // Store the rest for later translation --> when highest variable number is known + GET HIGHEST
+        } else { 
+            temp << line << '\n';
+
+            // head
+            iss>>curr;
+            this->translator->highest = max(curr, this->translator->highest);
+
+            if(curr == CONSTRAINT) {
+                // literals
+                iss>>curr;
+                // #negatives | bound
                 skip(2, iss);
+                parse_max(curr, iss);
+            } else {
+                // bound
+                skip(1, iss);
+                // literals
+                iss>>curr;
+                // #negatives
+                skip(1, iss);
+                parse_max(curr, iss);
+            }
         }
-        parse_max(curr, iss);
     }
 
     // Parse stored rules to translate now highest is known
@@ -84,76 +115,57 @@ void Parser::parse_rules(istream& in) {
         istringstream iss(line);
         iss>>curr;
 
-        if(curr == WEIGHT) this->translator->translate_weight(iss);
-        else this->translator->translate_constraint(iss);
+        if(curr == CONSTRAINT) this->translator->translate_constraint(iss);
+        else this->translator->translate_weight(iss);
     }
     return;
 }
 
-// Parses the symbol table
+// Parses the symbol table 
+// TODO: parse to create meta-file that allows backtranslation of found models
 void Parser::parse_symbol_table(istream& in) {
 
-    // Add dividor zero to the SAT stream
+    // Add separating zero to the SAT stream
     this->translator->to_sat << "0" << '\n';
 
     int curr;
-    char curr_symbol;
-    bool was_hidden = false;
     string line;
 
-    for(int i = 0; ; i++){
+    while(getline(in, line)) {
+        istringstream iss(line);
+        iss>>curr;
 
-        if(!was_hidden){
-            if(getline(in, line)) {
-                istringstream iss(line);
-                iss>>curr;
-                iss>>curr_symbol;
-                if(curr == ZERO_RULE) break;
-                // Add the line to the SAT stream
-                this->translator->to_sat << line << '\n';
-            } else break;
-        }
+        this->translator->to_sat << line << '\n';
+        if(curr == ZERO_RULE) break;
     }
 }
 
-// Parses the compute statements
-void Parser::parse_compute(istream& in) {
-
-    // Add the zero to the SAT stream
-    this->translator->to_sat << "0" << '\n';
+void Parser::parse_compute(istream & in, bool sign) {
 
     int curr;
     string line;
     
-    // Skip the 'B+'
+    // Skip the symbol
     getline(in, line);
-    // Add it to the SAT stream
-    this->translator->to_sat << "B+" << '\n';
 
-    // Translate the positives
+    // Add it to the SAT stream
+    this->translator->to_sat << (sign? "B+":"B-") << '\n';
+
+    // Translate
     while(getline(in, line)) {
-        this->translator->to_sat << line << '\n';
         istringstream iss(line);
         iss>>curr;
 
-        if(curr == ZERO_RULE) break;
-        else this->translator->translate_value(curr, true);
-    }
-
-    // Skip the 'B-'
-    getline(in, line);
-    // Add it to the SAT stream
-    this->translator->to_sat << "B-" << '\n';
-
-    // Translate the negatives
-    while(getline(in, line)) {
         this->translator->to_sat << line << '\n';
-        istringstream iss(line);
-        iss>>curr;
-
         if(curr == ZERO_RULE) break;
-        else this->translator->translate_value(curr, false);
+        else this->translator->translate_value(curr, sign);
     }
+}
+
+// Parses the amount of models 
+void Parser::parse_amount_of_models(istream& in) {
+
+    string line;
 
     // Get the amount of models
     getline(in, line);

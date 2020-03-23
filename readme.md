@@ -15,7 +15,7 @@ make
 
 ### Usage
 
-The translator expects smodels input, [see here](http://www.tcs.hut.fi/Software/smodels/lparse.ps.gz).
+The translator expects smodels input, see Appendix B [here](http://www.tcs.hut.fi/Software/smodels/lparse.ps.gz).
 
 To run the application:
 ```

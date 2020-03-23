@@ -26,7 +26,8 @@ class Parser {
     // Parse hierarchy
     void parse_rules(istream& in);
     void parse_symbol_table(istream& in);
-    void parse_compute(istream& in);
+    void parse_compute(istream& in, bool sign);
+    void parse_amount_of_models(istream& in);
 
 
     public: 

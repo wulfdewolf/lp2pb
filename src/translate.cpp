@@ -66,11 +66,11 @@ void Translator::merge() {
     }
 
     // Add the meta line
-    *out << "* #variable= " << this->highest << " #constraints= " << this->amount_of_constraints << '\n';
+    *out << "* #variable= " << this->highest << " #constraint= " << this->amount_of_constraints << '\n';
 
     // Add minimize line
     getline(this->minimize, line);
-    *out << line << '\n';
+    if(line != "") *out << line << '\n';
 
     // Add all the constraints
     while(this->constraints.rdbuf()->in_avail() != 0){
@@ -82,11 +82,7 @@ void Translator::merge() {
 
 void Translator::translate_value(int index, int sign) {
 
-    string variable = "x";
-    if(!sign) {
-        variable = "~x";
-    }
-    this->constraints << variable << index << " >= " << 1 << ";" << '\n';
+    this->constraints << "+1 " << (sign? "x":"~x") << index << " >= " << 1 << ";" << '\n';
     this->amount_of_constraints++;
 
     return;
@@ -155,10 +151,8 @@ void Translator::translate_weight(istringstream &iss) {
     iss>>head;
     iss>>bound;
     iss>>literals;
-    if(literals) {
-        iss>>negatives;
+    iss>>negatives;
     positives = literals - negatives;
-    }
 
     // Read the arrays of variables + their weights
     int variables[literals];
@@ -260,16 +254,13 @@ void Translator::add_sat(int rule[], int amount) {
 void Translator::add_single(int name, int weight, bool sign, stringstream &iss) {
 
     // Sign
-    if(weight < 0) iss << "-";
-    else iss << "+";
+    iss << (weight<0? "-":"+");
 
     // Weight
     iss << abs(weight);
         
     // Symbol
-    const char* var_name = " ~x";
-    if(sign) var_name = " x";
-    iss << var_name << name << " ";
+    iss << (sign? " x":" ~x") << name << " ";
 
     return;
 }
