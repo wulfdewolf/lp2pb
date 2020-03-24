@@ -15,7 +15,7 @@ make
 
 ### Executables
 
-This tool makes use of 3 other tools to translate its input; lp2sat and lp2lp ([see](http://www.tcs.hut.fi/Software/lp2sat/)), lp2normal([see](https://research.ics.aalto.fi/software/asp/lp2normal/))  
+This tool makes use of 3 other tools to translate its input; lp2sat and lp2lp ([see](http://www.tcs.hut.fi/Software/lp2sat/)), lp2normal([see](https://research.ics.aalto.fi/software/asp/lp2normal/)).  
 The executables for these should be in your PATH.  
 By calling:
 ```shell
@@ -30,11 +30,10 @@ OR add following line to ~/.bashrc:
 ```shell
 export PATH="/home/$USER/bin:$PATH"
 ```
-restart your terminal or call:
+and restart your terminal or call:
 ```shell
 source ~/.bashrc
 ```
-
 If you would want another version for any of these tools you can put them in your PATH yourself using the correct names:
 - lp2lp2
 - lp2normal
