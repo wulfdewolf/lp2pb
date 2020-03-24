@@ -16,12 +16,12 @@ make
 ### Executables
 
 This tool makes use of 3 other tools to translate its input; lp2sat and lp2lp ([see](http://www.tcs.hut.fi/Software/lp2sat/), lp2normal([see](https://research.ics.aalto.fi/software/asp/lp2normal/))  
-The executables for these should be in your PATH. 
+The executables for these should be in your PATH.  
 By calling:
 ```shell
 make path
 ```
-the latest versions (at the moment) are added to your ~/bin folder. 
+the latest versions (at the moment) are added to your ~/bin folder.   
 Make sure this folder is included in your PATH variable. 
 ```shell
 export PATH=~/bin:$PATH
