@@ -22,8 +22,11 @@ void Translator::merge() {
     stringstream output_normal;
     stringstream output_lp;
     stringstream output_sat;
+    cout << "CALLING LP2NORMAL\n";
     if(this->executor->exec(cmd_normal, this->to_sat, output_normal) != 0) throw executable_exception();
+    cout << "CALLING LP2LP\n";
     if(this->executor->exec(cmd_lp, output_normal, output_lp) != 0) throw executable_exception();
+    cout << "CALLING LP2SAT\n";
     if(this->executor->exec(cmd_sat, output_lp, output_sat) != 0) throw executable_exception();
 
 
