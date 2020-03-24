@@ -15,7 +15,7 @@ make
 
 ### Executables
 
-This tool makes use of 3 other tools to translate its input; lp2sat and lp2lp ([see](http://www.tcs.hut.fi/Software/lp2sat/), lp2normal([see](https://research.ics.aalto.fi/software/asp/lp2normal/))  
+This tool makes use of 3 other tools to translate its input; lp2sat and lp2lp ([see](http://www.tcs.hut.fi/Software/lp2sat/)), lp2normal([see](https://research.ics.aalto.fi/software/asp/lp2normal/))  
 The executables for these should be in your PATH.  
 By calling:
 ```shell
@@ -26,7 +26,7 @@ Make sure this folder is included in your PATH variable.
 ```shell
 export PATH=~/bin:$PATH
 ```
-or add following line to ~/.bashrc:
+OR add following line to ~/.bashrc:
 ```shell
 export PATH="/home/$USER/bin:$PATH"
 ```
