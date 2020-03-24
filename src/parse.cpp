@@ -8,40 +8,48 @@
 *           + parse_rules
 *             > translator object calls
 *           + parse_symbol_table
-              > translator object calls
+*             > translator object calls
 *           + parse_compute
 *             > translator object calls
+*           + parse_amount_of_models
+*             > translator object calls
+*           + translator->merge
 *   
 */
 #include "../include/parse.h"
 
 void Parser::parse(string inputfile) {
 
-    // Choose correct input
     istream *in = &cin;
     ifstream infile;
-    if(inputfile != "pipe") {
-        infile.open(inputfile, ifstream::in);
-        if(!infile.is_open()) throw runtime_error("Couldn't open selected inputfile!");
-		in = &infile;
+
+    try {
+        // Choose correct input
+        if(inputfile != "pipe") {
+            infile.open(inputfile, ifstream::in);
+            if(!infile.is_open()) throw invalid_inputfile_exception();
+            in = &infile;
+        }
+
+        // Parse rules
+        parse_rules(*in);
+
+        // Parse symbol table
+        parse_symbol_table(*in);
+
+        // Parse compute statements
+        parse_compute(*in, 1);
+        parse_compute(*in, 0);
+
+        // Parse amount of models
+        parse_amount_of_models(*in);
+
+        // Merge SAT and translated constraints
+        this->translator->merge();
+
+    } catch(exception& e) {
+        cout << "lp2pb: " << e.what() << '\n';
     }
-
-    // Parse rules
-    parse_rules(*in);
-
-    // Parse symbol table
-    parse_symbol_table(*in);
-
-    // Parse compute statements
-    parse_compute(*in, 1);
-    parse_compute(*in, 0);
-
-    // Parse amount of models
-    parse_amount_of_models(*in);
-
-    // Merge SAT and translated constraints
-    this->translator->merge();
-
     infile.close();
     return;
 }
@@ -58,7 +66,7 @@ void Parser::parse_rules(istream& in) {
         istringstream iss(line);
         iss>>curr;
 
-        if(curr < 0 || curr > 6) throw runtime_error("Unknow rule type in input file!");
+        if(curr < 0 || curr > 6) throw invalid_ruletype_exception();
         else if(curr == ZERO_RULE) break;
         else if(curr == MINIMIZE) this->translator->translate_minimize(iss);
         // Translate basic, choice and minimize rules immediately + GET HIGHEST
@@ -142,24 +150,26 @@ void Parser::parse_symbol_table(istream& in) {
 
 void Parser::parse_compute(istream & in, bool sign) {
 
-    int curr;
-    string line;
-    
-    // Skip the symbol
-    getline(in, line);
+        int curr;
+        string line;
+        string symbol = (sign? "B+":"B-");
 
-    // Add it to the SAT stream
-    this->translator->to_sat << (sign? "B+":"B-") << '\n';
+        // Symbol
+        getline(in, line);
+        if(line != symbol) throw missing_compute_exception(sign);
 
-    // Translate
-    while(getline(in, line)) {
-        istringstream iss(line);
-        iss>>curr;
+        // Add it to the SAT stream
+        this->translator->to_sat << symbol << '\n';
 
-        this->translator->to_sat << line << '\n';
-        if(curr == ZERO_RULE) break;
-        else this->translator->translate_value(curr, sign);
-    }
+        // Translate
+        while(getline(in, line)) {
+            istringstream iss(line);
+            iss>>curr;
+
+            this->translator->to_sat << line << '\n';
+            if(curr == ZERO_RULE) break;
+            else this->translator->translate_value(curr, sign);
+        }
 }
 
 // Parses the amount of models 

@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <ext/stdio_filebuf.h>
+#include <sys/wait.h>
 #include <iostream>
 
 using namespace std;
@@ -35,7 +36,7 @@ class Executor {
 
     public:
 
-    void exec(char *cmd, istream &input, ostream &output);
+    int exec(char *cmd, istream &input, ostream &output);
 
 };
 

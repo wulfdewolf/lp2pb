@@ -11,13 +11,25 @@
 
 using namespace std;
 
+// EXCEPTIONS
+struct executable_exception : public exception {
+    const char* what() const throw() {
+        return "Executable error!";
+    }
+};
+
+struct invalid_outputfile_exception : public exception {
+    const char* what() const throw() {
+        return "Outputfile invalid.";
+    }
+};
+
 // TRANSLATOR CLASS
 class Translator {
 
     private:
 
     // Utility
-    void get_problem_line(stringstream &iss);
     void read_literals(int array[], int amount, istringstream &iss);
     void add_sat(int rule[], int amount);
     void add_single(int name, int weight, bool sign, stringstream &iss);
@@ -28,6 +40,8 @@ class Translator {
     }
     void add_series(int names[], int weights[], int start, int end, bool sign, stringstream &iss);
     void add_constraint(int variables[], int weights[], int negatives, int positives, int value, int extra, int extra_weight, bool extra_sign);
+
+    bool file_exists(const char *fileName);
 
     // Mininimise statement
     stringstream minimize;

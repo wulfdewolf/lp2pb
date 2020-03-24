@@ -13,7 +13,6 @@
 //-----------------------------------------------------------------------------
 void Translator::merge() {
 
-
     // Commands to execute
     char cmd_normal[] =  "./executables/lp2normal/lp2normal-2.18";
     char cmd_lp[] =  "./executables/lp2lp/lp2lp2-1.23";
@@ -23,12 +22,10 @@ void Translator::merge() {
     stringstream output_normal;
     stringstream output_lp;
     stringstream output_sat;
-    
-    this->executor->exec(cmd_normal, this->to_sat, output_normal);
-    this->executor->exec(cmd_lp, output_normal, output_lp);
-    this->executor->exec(cmd_sat, output_lp, output_sat);
+    if(this->executor->exec(cmd_normal, this->to_sat, output_normal) != 0) throw executable_exception();
+    if(this->executor->exec(cmd_lp, output_normal, output_lp) != 0) throw executable_exception();
+    if(this->executor->exec(cmd_sat, output_lp, output_sat) != 0) throw executable_exception();
 
-    // Translate generated output to the constraints
 
     string line;
     int curr;
@@ -56,11 +53,27 @@ void Translator::merge() {
     }
 
     // Read into correct output + add minimize and meta lines
-
     ostream *out = &cout;
     fstream outputfile;
     // If an outputfile-name was provided
     if(this->outputfile != "pipe") {
+        // Check if it exists already
+        if(file_exists(this->outputfile.c_str())) {
+            cout << "Chosen outputfile exists already, append to it? (y/n)\n";
+
+            get_input:
+            char response;
+            cin >> response;
+                switch(response) {
+                    case 'y': break;
+                    case 'n':
+                        throw invalid_outputfile_exception();
+                        break;
+                    default: 
+                        cout << "Invalid choice!\n";
+                        goto get_input;
+                }
+        }
         outputfile.open(this->outputfile, std::fstream::in | std::fstream::out | std::fstream::app);
         out = &outputfile;
     }
@@ -77,7 +90,7 @@ void Translator::merge() {
         getline(this->constraints, line);
         *out << line << '\n';
     }
-    if(this->outputfile != "pipe") outputfile.close();
+    outputfile.close();
 }
 
 void Translator::translate_value(int index, int sign) {
@@ -229,10 +242,6 @@ void Translator::translate_minimize(istringstream &iss) {
 //-----------------------------------------------------------------------------
 //                                  UTILITY
 //-----------------------------------------------------------------------------
-void Translator::get_problem_line(stringstream &iss) {
-
-}
-
 void Translator::read_literals(int array[], int amount, istringstream &iss) {
     for(int i = 0; i < amount; i++) {
         iss>>array[i];
@@ -281,4 +290,10 @@ void Translator::add_constraint(int variables[], int weights[], int negatives, i
 
     // Increase counter
     this->amount_of_constraints++;
+}
+
+bool Translator::file_exists(const char *fileName)
+{
+    ifstream infile(fileName);
+    return infile.good();
 }

@@ -27,13 +27,17 @@ void Executor::read_from_pipe (int file_descriptor, ostream &output) {
     }
 }
 
-void Executor::exec(char *cmd, istream &input, ostream &output) {
+int Executor::exec(char *cmd, istream &input, ostream &output) {
 
     // pipes for parent to write and read
     pipe(pipes[PARENT_READ_PIPE]);
     pipe(pipes[PARENT_WRITE_PIPE]);
+
+    pid_t c_pid;
+    int status = -1;
+    c_pid = fork();
      
-    if(!fork()) {
+    if(!c_pid) {
         char *argv[]={ cmd , NULL};
  
         dup2(CHILD_READ_FD, STDIN_FILENO);  
@@ -45,9 +49,9 @@ void Executor::exec(char *cmd, istream &input, ostream &output) {
         close(PARENT_READ_FD);
         close(PARENT_WRITE_FD);
           
-        execv(argv[0], argv);
+        execvp(argv[0], argv);
 
-    } else {
+    } else if(c_pid > 0){
  
         // Close unused (parent)   
         close(CHILD_READ_FD);
@@ -56,7 +60,12 @@ void Executor::exec(char *cmd, istream &input, ostream &output) {
         // Write to child’s stdin
         write_to_pipe(PARENT_WRITE_FD, input);
 
+        // Wait for child
+        wait(&status);
+
         // Read from child’s stdout
         read_from_pipe(PARENT_READ_FD, output);
     }
+    if(WIFEXITED(status)) return WEXITSTATUS(status);
+    else return 1;
 }
