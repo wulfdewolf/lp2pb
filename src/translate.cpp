@@ -14,9 +14,9 @@
 void Translator::merge() {
 
     // Commands to execute
-    char cmd_normal[] =  "./executables/lp2normal/lp2normal-2.18";
-    char cmd_lp[] =  "./executables/lp2lp/lp2lp2-1.23";
-    char cmd_sat[] =  "./executables/lp2sat/lp2sat-1.24";
+    char cmd_normal[] =  "lp2normal";
+    char cmd_lp[] =  "lp2lp2";
+    char cmd_sat[] =  "lp2sat";
 
     // Output streams
     stringstream output_normal;

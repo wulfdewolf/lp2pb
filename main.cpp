@@ -8,6 +8,7 @@
 #include "include/util.h"
 using namespace std;
 
+
 int main(int argc, char* argv[]) {
 
     string usage_message = "Usage: ./lp2pb <-i inputfile1> <-o outputfile>\n";
@@ -45,6 +46,5 @@ int main(int argc, char* argv[]) {
         // Start parsing
         parser.parse(inputfile);
     } else cout << usage_message;
-
     return 0;
 }
