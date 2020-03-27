@@ -66,8 +66,7 @@ int Executor::exec(char *cmd, istream &input, ostream &output) {
         // Read from child’s stdout
         read_from_pipe(PARENT_READ_FD, output);
     }
+    //if(WIFEXITED(status)) return WEXITSTATUS(status);
+    //else return 1;
     return 0;
-    /*
-    if(WIFEXITED(status)) return WEXITSTATUS(status);
-    else return 1;*/
 }
