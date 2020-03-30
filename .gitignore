@@ -2,4 +2,5 @@ lp2pb
 /obj
 /benchmarks
 ttt
+.gitignore
 .vcode
