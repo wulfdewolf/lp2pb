@@ -22,8 +22,11 @@ $(OBJ_DIR):
 
 path:
 	ln $(BASEDIR)/executables/lp2normal/lp2normal-2.18 ~/bin/lp2normal
+	chmod +x ~/bin/lp2normal
 	ln $(BASEDIR)/executables/lp2sat/lp2sat-1.24 ~/bin/lp2sat
+	chmod +x ~/bin/lp2sat
 	ln $(BASEDIR)/executables/lp2lp/lp2lp2-1.23 ~/bin/lp2lp2
+	chmod +x ~bin/lp2lp2
 
 clean:
 	$(RM) -r $(OBJ_DIR) $(TARGET)

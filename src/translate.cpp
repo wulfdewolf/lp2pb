@@ -145,7 +145,7 @@ void Translator::translate_constraint(istringstream &iss) {
 
     // X = true constraint
 
-    // All weights are 1 here so we don't need to calculate the sum
+    // All weights are +1 here so we don't need to calculate the sum
     fill_n(weights, literals, 1);
     add_constraint(variables, weights, negatives, positives, bound, new_var, bound, 0);
     
@@ -153,7 +153,7 @@ void Translator::translate_constraint(istringstream &iss) {
 
     // --> invert all weights
     fill_n(weights, literals, -1);
-    add_constraint(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
+    add_constraint(variables, weights, negatives, positives, -bound+1, new_var, abs(-literals+bound-1), 1);
 
     return;
 }
