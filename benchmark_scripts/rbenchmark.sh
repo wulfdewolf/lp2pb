@@ -9,7 +9,7 @@ cd $PBS_O_WORKDIR
 module purge
 module load libreadline/8.0-GCCcore-8.3.0
 
-../../runlim -o runlim.txt -t 1500 -s 14336 SCRIPT ARG >> solver.txt 
+../../runlim -o runlim_INSTANCE.txt -t 1500 -s 14336 SCRIPT -o solver_INSTANCE.txt ARG
 
 # solution
 if cat solver.txt | grep -i -E "OPTIMUM|UNSAT";
@@ -46,5 +46,6 @@ printf '%s' "FAMILY," >> ../../result.csv;
 # instance
 printf "INSTANCE\n" >> ../../result.csv;
 
-# remove runlim file
-rm runlim.txt
+# remove temp files
+rm runlim_INSTANCE.txt
+rm solver_INSTANCE.txt
