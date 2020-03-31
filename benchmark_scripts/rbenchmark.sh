@@ -9,13 +9,14 @@ cd $PBS_O_WORKDIR
 module purge
 module load libreadline/8.0-GCCcore-8.3.0
 
-../../runlim -o runlim_INSTANCE.txt -t 1500 -s 14336 SCRIPT -o solver_INSTANCE.txt ARG
+../../runlim -o runlim_INSTANCE.txt -t 1500 -s 14336 SCRIPT solver_INSTANCE.txt ARG
 
 # solution
 if cat solver.txt | grep -i -E "OPTIMUM|UNSAT";
 then 
     printf "1," >> ../../result.csv
 elif cat solver.txt | grep -i "UNKNOWN";
+then
     printf "2," >> ../../result.csv
 else 
     printf "0," >> ../../result.csv
