@@ -15,10 +15,10 @@ module load libreadline/8.0-GCCcore-8.3.0
 if cat solver_INSTANCE_SETUP.txt | grep -E "OPTIMUM|UNSAT";
 then 
     printf "1," >> ../../result.csv
-elif cat solver_INSTANCE_SETUP.txt | grep -i "UNKNOWN";
+elif cat solver_INSTANCE_SETUP.txt | grep "UNKNOWN";
 then
     printf "2," >> ../../result.csv
-elif cat solver_INSTANCE_SETUP.txt | grep -i "SAT";
+elif cat solver_INSTANCE_SETUP.txt | grep "SAT";
 then 
     printf "0," >> ../../result.csv
 else 
