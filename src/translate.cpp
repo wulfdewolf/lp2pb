@@ -153,7 +153,7 @@ void Translator::translate_constraint(istringstream &iss) {
 
     // --> invert all weights
     fill_n(weights, literals, -1);
-    add_constraint(variables, weights, negatives, positives, -bound+1, new_var, abs(-literals+bound-1), 1);
+    add_constraint(variables, weights, negatives, positives, 0-bound+1, new_var, abs(-literals+bound-1), 1);
 
     return;
 }

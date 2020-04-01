@@ -18,8 +18,11 @@ then
 elif cat solver_INSTANCE_SETUP.txt | grep -i "UNKNOWN";
 then
     printf "2," >> ../../result.csv
-else 
+elif cat solver_INSTANCE_SETUP.txt | grep -i "SAT";
+then 
     printf "0," >> ../../result.csv
+else 
+    printf "3," >> ../../result.csv
 fi
 
 # outcode 
