@@ -15,16 +15,20 @@ void Translator::merge() {
 
     // Commands to execute
     char cmd_normal[] = "lp2normal";
+    char option_normal [] = "-e";
+    char* argv_normal[] = { cmd_normal, option_normal, NULL};
     char cmd_lp[] = "lp2lp2";
+    char* argv_lp[] = { cmd_lp, NULL};
     char cmd_sat[] = "lp2sat";
+    char* argv_sat[] = { cmd_sat, NULL};
 
     // Output streams
     stringstream output_normal;
     stringstream output_lp;
     stringstream output_sat;
-    if(this->executor->exec(cmd_normal, this->to_lp2sat, output_normal) != 0) throw executable_exception();
-    if(this->executor->exec(cmd_lp, output_normal, output_lp) != 0) throw executable_exception();
-    if(this->executor->exec(cmd_sat, output_lp, output_sat) != 0) throw executable_exception();
+    if(this->executor->exec(argv_normal, this->to_lp2sat, output_normal) != 0) throw executable_exception();
+    if(this->executor->exec(argv_lp, output_normal, output_lp) != 0) throw executable_exception();
+    if(this->executor->exec(argv_sat, output_lp, output_sat) != 0) throw executable_exception();
 
     string line;
     int curr;

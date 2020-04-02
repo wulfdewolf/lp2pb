@@ -27,7 +27,7 @@ void Executor::read_from_pipe (int file_descriptor, ostream &output) {
     }
 }
 
-int Executor::exec(char *cmd, istream &input, ostream &output) {
+int Executor::exec(char *argv[], istream &input, ostream &output) {
 
     // pipes for parent to write and read
     pipe(pipes[PARENT_READ_PIPE]);
@@ -36,9 +36,9 @@ int Executor::exec(char *cmd, istream &input, ostream &output) {
     pid_t c_pid;
     int status = 1;
     c_pid = fork();
+
      
     if(!c_pid) {
-        char *argv[]={ cmd , NULL};
  
         dup2(CHILD_READ_FD, STDIN_FILENO);  
         dup2(CHILD_WRITE_FD, STDOUT_FILENO);

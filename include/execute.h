@@ -36,7 +36,7 @@ class Executor {
 
     public:
 
-    int exec(char *cmd, istream &input, ostream &output);
+    int exec(char *argv[], istream &input, ostream &output);
 
 };
 
