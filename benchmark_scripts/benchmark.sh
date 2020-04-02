@@ -12,7 +12,7 @@ do
     sed -i "s/SETUP/1/g" benchmark1_${F##*/}.pbs;
     sed -i "s|FAMILY|${PWD##*/}|g" benchmark1_${F##*/}.pbs;
     sed -i "s|INSTANCE|${F##*/}|g" benchmark1_${F##*/}.pbs;
-    #qsub benchmark1_${F##*/}.pbs;
+    qsub benchmark1_${F##*/}.pbs;
 
     #2
     # gringo | lp2pb | roundingsat
@@ -21,7 +21,7 @@ do
     sed -i "s/SETUP/2/g" benchmark2_${F##*/}.pbs;
     sed -i "s|FAMILY|${PWD##*/}|g" benchmark2_${F##*/}.pbs;
     sed -i "s|INSTANCE|${F##*/}|g" benchmark2_${F##*/}.pbs;
-    #qsub benchmark2_${F##*/}.pbs;
+    qsub benchmark2_${F##*/}.pbs;
 
     #3
     # gringo | lp2normal | lp2lp2 | lp2sat | roundingsat
@@ -30,7 +30,7 @@ do
     sed -i "s/SETUP/3/g" benchmark3_${F##*/}.pbs;
     sed -i "s|FAMILY|${PWD##*/}|g" benchmark3_${F##*/}.pbs;
     sed -i "s|INSTANCE|${F##*/}|g" benchmark3_${F##*/}.pbs;
-    #qsub benchmark3_${F##*/}.pbs;
+    qsub benchmark3_${F##*/}.pbs;
 
     #4
     # gringo | lp2normal | lp2lp2 | clasp
@@ -39,6 +39,6 @@ do
     sed -i "s/SETUP/4/g" benchmark4_${F##*/}.pbs;
     sed -i "s|FAMILY|${PWD##*/}|g" benchmark4_${F##*/}.pbs;
     sed -i "s|INSTANCE|${F##*/}|g" benchmark4_${F##*/}.pbs;
-    #qsub benchmark4_${F##*/}.pbs;
+    qsub benchmark4_${F##*/}.pbs;
 }
 done
