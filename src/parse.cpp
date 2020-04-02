@@ -134,42 +134,49 @@ void Parser::parse_rules(istream& in) {
 void Parser::parse_symbol_table(istream& in) {
 
     // Add separating zero to the SAT stream
-    this->translator->to_sat << "0" << '\n';
+    this->translator->to_lp2sat << "0" << '\n';
 
     int curr;
+    string symbol;
     string line;
 
     while(getline(in, line)) {
         istringstream iss(line);
         iss>>curr;
+        iss>>symbol;
 
-        this->translator->to_sat << line << '\n';
         if(curr == ZERO_RULE) break;
+        this->translator->symbol_table[curr] = symbol;
     }
+
+    this->translator->translate_symbol_table();
+
+    // Add separating zero to the SAT stream
+    this->translator->to_lp2sat << "0" << '\n';
 }
 
 void Parser::parse_compute(istream & in, bool sign) {
 
-        int curr;
-        string line;
-        string symbol = (sign? "B+":"B-");
+    int curr;
+    string line;
+    string symbol = (sign? "B+":"B-");
 
-        // Symbol
-        getline(in, line);
-        if(line != symbol) throw missing_compute_exception(sign);
+    // Symbol
+    getline(in, line);
+    if(line != symbol) throw missing_compute_exception(sign);
 
-        // Add it to the SAT stream
-        this->translator->to_sat << symbol << '\n';
+    // Add it to the SAT stream
+    this->translator->to_lp2sat << symbol << '\n';
 
-        // Translate
-        while(getline(in, line)) {
-            istringstream iss(line);
-            iss>>curr;
+    // Translate
+    while(getline(in, line)) {
+        istringstream iss(line);
+        iss>>curr;
 
-            this->translator->to_sat << line << '\n';
-            if(curr == ZERO_RULE) break;
-            else this->translator->translate_value(curr, sign);
-        }
+        this->translator->to_lp2sat << line << '\n';
+        if(curr == ZERO_RULE) break;
+        else this->translator->translate_value(curr, sign);
+    }
 }
 
 // Parses the amount of models 
@@ -181,7 +188,7 @@ void Parser::parse_amount_of_models(istream& in) {
     getline(in, line);
     istringstream iss(line);
     iss>>this->translator->amount_of_models;
-    this->translator->to_sat << this->translator->amount_of_models << '\n';
+    this->translator->to_lp2sat << this->translator->amount_of_models << '\n';
 
     return;
 }

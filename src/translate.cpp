@@ -14,18 +14,17 @@
 void Translator::merge() {
 
     // Commands to execute
-    char cmd_normal[] =  "lp2normal";
-    char cmd_lp[] =  "lp2lp2";
-    char cmd_sat[] =  "lp2sat";
+    char cmd_normal[] = "lp2normal";
+    char cmd_lp[] = "lp2lp2";
+    char cmd_sat[] = "lp2sat";
 
     // Output streams
     stringstream output_normal;
     stringstream output_lp;
     stringstream output_sat;
-    if(this->executor->exec(cmd_normal, this->to_sat, output_normal) != 0) throw executable_exception();
+    if(this->executor->exec(cmd_normal, this->to_lp2sat, output_normal) != 0) throw executable_exception();
     if(this->executor->exec(cmd_lp, output_normal, output_lp) != 0) throw executable_exception();
     if(this->executor->exec(cmd_sat, output_lp, output_sat) != 0) throw executable_exception();
-
 
     string line;
     int curr;
@@ -93,6 +92,17 @@ void Translator::merge() {
     outputfile.close();
 }
 
+void Translator::translate_symbol_table() {
+
+    // Iterator
+    map<int, string>::iterator it;
+
+    // Add all symbols
+    for ( it = this->symbol_table.begin(); it != this->symbol_table.end(); it++ ) {
+        to_lp2sat << it->first << " " << it->second << "\n";
+    }
+}
+
 void Translator::translate_value(int index, int sign) {
 
     this->constraints << "+1 " << (sign? "x":"~x") << index << " >= " << 1 << ";" << '\n';
@@ -104,7 +114,7 @@ void Translator::translate_value(int index, int sign) {
 void Translator::translate_sat(string line) {
 
     // Rules without aggregates are completely translated to sat
-    this->to_sat << line << '\n';
+    this->to_lp2sat << line << '\n';
 
     return;
 }
@@ -130,15 +140,16 @@ void Translator::translate_constraint(istringstream &iss) {
     *   Add correct parts to streams
     */ 
 
-    // -- To_sat
+    // -- to_lp2sat
     int new_var = ++this->highest;
     int new_var_rule[5] = { 1, head, 1, 0, new_var };
     int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
 
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
+    this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
 
-    // -- Constraints
+    // -- constraints
 
     // X = true constraint
 
@@ -171,19 +182,20 @@ void Translator::translate_weight(istringstream &iss) {
     int variables[literals];
     int weights[literals];
     read_literals(variables, literals, iss);
-    read_literals(weights, literals, iss);
+    read_weights(weights, literals, iss);
 
     /*
     *   Add correct parts to streams
     */ 
 
-    // -- To_sat
+    // -- to_lp2sat
     int new_var = ++this->highest;
     int new_var_rule[5] = { 1, head, 1, 0, new_var };
     int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
 
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
+    this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
 
 
     // -- Constraints
@@ -225,7 +237,7 @@ void Translator::translate_minimize(istringstream &iss) {
     int variables[literals];
     int weights[literals];
     read_literals(variables, literals, iss);
-    read_literals(weights, literals, iss);
+    read_weights(weights, literals, iss);
 
     /*
     *   Add correct parts to streams
@@ -242,9 +254,10 @@ void Translator::translate_minimize(istringstream &iss) {
 //-----------------------------------------------------------------------------
 //                                  UTILITY
 //-----------------------------------------------------------------------------
-void Translator::read_literals(int array[], int amount, istringstream &iss) {
+void Translator::read_literals(int array[], int amount, istringstream &iss, bool is_weight) {
     for(int i = 0; i < amount; i++) {
         iss>>array[i];
+        if(!is_weight && this->symbol_table.count(array[i]) == 0) this->symbol_table[array[i]] = "lptopb(" + to_string(array[i]) + ")";
     }
 }
 
@@ -252,11 +265,11 @@ void Translator::add_sat(int rule[], int amount) {
 
     int i = 0;
     while(i < amount) {
-        this->to_sat << rule[i];
+        this->to_lp2sat << rule[i];
         if(++i == amount) {
-            this->to_sat << '\n';
+            this->to_lp2sat << '\n';
             break;
-        } else this->to_sat << " ";
+        } else this->to_lp2sat << " ";
     }
 }
 

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <map>
 
 #include "execute.h"
 #include "util.h"
@@ -30,7 +31,10 @@ class Translator {
     private:
 
     // Utility
-    void read_literals(int array[], int amount, istringstream &iss);
+    void read_literals(int array[], int amount, istringstream &iss, bool is_weight = false);
+    void read_weights(int array[], int amount, istringstream &iss) {
+        read_literals(array, amount, iss, true);
+    };
     void add_sat(int rule[], int amount);
     void add_single(int name, int weight, bool sign, stringstream &iss);
 
@@ -51,7 +55,10 @@ class Translator {
 
     // Streams
     stringstream constraints;
-    stringstream to_sat;
+    stringstream to_lp2sat;
+
+    // Symbol table
+    map<int, string> symbol_table;
 
     // Executor
     Executor *executor;
@@ -59,10 +66,9 @@ class Translator {
     // Output
     string outputfile = "pipe";
 
-    int highest = 1;
+    int highest = 0;
     int amount_of_constraints = 0;
     int amount_of_models;
-    char* symbol_table;
 
     // Specific translation per rule type
     void translate_sat(string line);
@@ -73,9 +79,11 @@ class Translator {
     // Values
     void translate_value(int index, int sign);
 
+    // Symbol tables
+    void translate_symbol_table();
+
     // Call to lp2sat and merge
     void merge();
-
 };
 
 #endif
