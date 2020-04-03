@@ -86,7 +86,7 @@ void Translator::merge() {
 
     // Add minimize line
     getline(this->minimize, line);
-    if(line != "") *out << line << '\n';
+    if(line != "") *out << line << ";" << '\n';
 
     // Add all the constraints
     while(this->constraints.rdbuf()->in_avail() != 0){
@@ -243,13 +243,33 @@ void Translator::translate_minimize(istringstream &iss) {
     read_literals(variables, literals, iss);
     read_weights(weights, literals, iss);
 
+    // Check if it is the first one --> calculate initial penalty if so
+    bool was_first = this->minimize.rdbuf()->in_avail() == 0;
+    int penalty = 0;
+    if(!was_first) {
+        string line; 
+        int curr;
+        while(this->minimize_weights.rdbuf()->in_avail() != 0) {
+            this->minimize_weights>>curr;
+            penalty += curr;
+        }
+    }
+
+    // Add penalty to weights and store
+    for(int i=0; i < literals; i++) {
+        weights[i] *= penalty+1;
+        this->minimize_weights << weights[i] << " ";
+    }
+
+    // Also add previous penalty
+    this->minimize_weights << penalty;
+
     /*
     *   Add correct parts to streams
     */ 
-    this->minimize << "min: ";
+    if(was_first) this->minimize << "min: ";
     add_series(variables, weights, 0, negatives, 0, this->minimize);
-    add_series(variables, weights, negatives, positives+1, 1, this->minimize);
-    this->minimize << ";\n";
+    add_series(variables, weights, negatives, positives, 1, this->minimize);
 
     return;
 }

@@ -1,0 +1,4 @@
+command: echo cat
+cpu time: 0.00
+max memory: 1908
+-----OUTPUT-----

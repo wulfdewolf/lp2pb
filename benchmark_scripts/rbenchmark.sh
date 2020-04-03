@@ -1,66 +1,68 @@
 #!/usr/bin/env bash
 
 #PBS -l nodes=1:ppn=1:ivybridge
-#PBS -l walltime=00:40:00
-#PBS -l pmem=16gb
+#PBS -l walltime=00:30:00
+#PBS -l pmem=14gb
 
 cd $PBS_O_WORKDIR
 
 module purge
 module load libreadline/8.0-GCCcore-8.3.0
 
-../../runlim -o runlim_INSTANCE_SETUP.txt -r 1500 -s 14336 SCRIPT ARG >> solver_INSTANCE_SETUP.txt
+# Set limits
+ulimit -Ht 1203 -St 1200
+ulimit -Hv 14336 -Sm 12288
 
-
-## LOCK
-exec {lock_fd}>../../lock/mylockfile || exit 1
-flock -n "$lock_fd"
- 
-# solution
-if cat solver_INSTANCE_SETUP.txt | grep -E "OPTIMUM";
-then 
-    printf "1," >> ../../result.csv
-elif cat solver_INSTANCE_SETUP.txt | grep "UNSAT";
-then
-    printf "2," >> ../../result.csv
-elif cat solver_INSTANCE_SETUP.txt | grep "SAT";
-then 
-    printf "3," >> ../../result.csv
-elif cat solver_INSTANCE_SETUP.txt | grep "UNKNOWN";
-then
-    printf "4," >> ../../result.csv
-else 
-    printf "5," >> ../../result.csv
-fi
+/usr/bin/time --format="%U,%M," --output=time_INSTANCE_SETUP.csv SCRIPT ARG >> solver_INSTANCE_SETUP.txt
 
 # outcode 
-cat runlim_INSTANCE_SETUP.txt | sed -n -e 's/^.*result //p' | tr -d \\n >> ../../result.csv
-printf "," >> ../../result.csv 
+ret = $?
+printf "$ret," >> result_INSTANCE_SETUP.csv
 
-# time
-cat runlim_INSTANCE_SETUP.txt | sed -n -e 's/^.*real //p' | tr -d \\n >> ../../result.csv
-printf "," >> ../../result.csv
-
-# status
-cat runlim_INSTANCE_SETUP.txt | sed -n -e 's/^.*status //p' | tr -d \\n >> ../../result.csv
-printf "," >> ../../result.csv
-
-# memusage
-cat runlim_INSTANCE_SETUP.txt | sed -n -e 's/^.*space //p' | tr -d \\n >> ../../result.csv
-printf "," >> ../../result.csv
+# memory and time 
+cat time_INSTANCE_SETUP.csv >> result_INSTANCE_SETUP.csv;
 
 # setup
-printf "SETUP," >> ../../result.csv;
+printf "SETUP," >> result_INSTANCE_SETUP.csv;
 
 # problem family
-printf '%s' "FAMILY," >> ../../result.csv;
+printf "FAMILY," >> result_INSTANCE_SETUP.csv;
 
 # instance
-printf "INSTANCE\n" >> ../../result.csv;
- 
-## UNLOCK
-flock -u "$lock_fd"
+printf "INSTANCE\n" >> result_INSTANCE_SETUP.csv;
+
+# SOLUTION
+if cat solver_INSTANCE_SETUP.txt | grep -E "UNSAT";
+then
+    printf "1," >> result_INSTANCE_SETUP.csv
+elif cat solver_INSTANCE_SETUP.txt | grep -E "OPTIMUM|SAT";
+then 
+    # Roundingsat
+    if [SETUP = 2] || [SETUP = 3] || [SETUP = 4] || [SETUP = 5];
+    then 
+        if cat solver_INSTANCE_SETUP.txt | sed -n -e 's/^.*o //p';
+        then 
+            cat solver_INSTANCE_SETUP.txt | sed -n -e 's/^.*o //p' >> result_INSTANCE_SETUP.csv;
+            printf "," >> result_INSTANCE_SETUP.csv;
+        else 
+            printf "2," >> result_INSTANCE_SETUP.csv;
+
+    # Clasp
+    else 
+        if cat solver_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+';
+        then 
+            cat solver_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+' >> result_INSTANCE_SETUP.csv;
+            printf "," >> result_INSTANCE_SETUP.csv;
+        else 
+            printf "2," >> result_INSTANCE_SETUP.csv;
+
+elif cat solver_INSTANCE_SETUP.txt | grep "UNKNOWN";
+then
+    printf "4," >> result_INSTANCE_SETUP.csv
+else 
+    printf "5," >> result_INSTANCE_SETUP.csv
+fi
 
 # remove temp files
-rm runlim_INSTANCE_SETUP.txt
+rm time_INSTANCE_SETUP.txt
 rm solver_INSTANCE_SETUP.txt

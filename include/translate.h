@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <vector>
 
 #include "execute.h"
 #include "util.h"
@@ -49,6 +50,7 @@ class Translator {
 
     // Mininimise statement
     stringstream minimize;
+    stringstream minimize_weights;
 
 
     public: 
