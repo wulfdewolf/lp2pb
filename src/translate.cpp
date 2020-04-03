@@ -269,7 +269,7 @@ void Translator::translate_minimize(istringstream &iss) {
     */ 
     if(was_first) this->minimize << "min: ";
     add_series(variables, weights, 0, negatives, 0, this->minimize);
-    add_series(variables, weights, negatives, positives, 1, this->minimize);
+    add_series(variables, weights, negatives, negatives+positives, 1, this->minimize);
 
     return;
 }
