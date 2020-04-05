@@ -6,11 +6,20 @@
 #include "include/parse.h"
 #include "include/translate.h"
 #include "include/util.h"
+#include <csignal>
 using namespace std;
 
+void signalHandler(int signum) {
+   cout << "lp2pb: INTERRUPTED\n";
+   exit(signum);  
+}
 
 int main(int argc, char* argv[]) {
 
+    // Load signalhandler
+    signal(SIGINT, signalHandler);
+
+    // Usage
     string usage_message = "Usage: ./lp2pb <-i inputfile1> <-o outputfile>\n";
 
     if(argc ==  5 || argc == 3 || argc == 1) {
