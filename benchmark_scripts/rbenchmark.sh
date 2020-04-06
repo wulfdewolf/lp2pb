@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #PBS -l nodes=1:ppn=1:ivybridge
-#PBS -l walltime=00:21:00
+#PBS -l walltime=00:22:00
 #PBS -l pmem=15gb
 
 cd $PBS_O_WORKDIR
@@ -9,63 +9,69 @@ cd $PBS_O_WORKDIR
 module purge
 module load libreadline/8.0-GCCcore-8.3.0
 
-/usr/bin/time --format="%U,%M,%x,SETUP,FAMILY,INSTANCE" --output=result_INSTANCE_SETUP.csv SCRIPT ARG >> "$TMPDIR"/"$TMPDIR"/solver_INSTANCE_SETUP.txt
+# Cores take a lot of space so don't make them
+ulimit -c 0
 
-# SOLUTION
-if cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep "UNSAT";
-then
-    printf "1," >> result_INSTANCE_SETUP.csv;
-elif cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep "OPTIMUM";
+printf "time,space,outcode,status,solution,SETUP,FAMILY,INSTANCE\n" > result_INSTANCE_SETUP.csv;
+../../runlim -r 1203 -s 12288 -o "$TMPDIR"/run_INSTANCE_SETUP.txt SCRIPT ARG > "$TMPDIR"/out_INSTANCE_SETUP.txt
+
+# time
+time=$(cat "$TMPDIR"/run_INSTANCE_SETUP.txt | grep -oP '(?<=real ).*');
+sed -i 's|time|'"$time"'|g' result_INSTANCE_SETUP.csv;
+
+# space
+space=$(cat "$TMPDIR"/run_INSTANCE_SETUP.txt | grep -oP '(?<=space ).*');
+sed -i 's|space|'"$space"'|g' result_INSTANCE_SETUP.csv;
+
+# outcode
+outcode=$(cat "$TMPDIR"/run_INSTANCE_SETUP.txt | grep -oP '(?<=result ).*');
+sed -i 's|outcode|'"$outcode"'|g' result_INSTANCE_SETUP.csv;
+
+# status
+status=$(cat "$TMPDIR"/run_INSTANCE_SETUP.txt | grep -oP '(?<=status ).*');
+sed -i 's|status|'"$status"'|g' result_INSTANCE_SETUP.csv;
+
+if echo "$status" | grep ok;
+# FINISHED
 then 
-    # Roundingsat
-    if echo SETUP | grep 2 || echo SETUP | grep 3 || echo SETUP | grep 4 || echo SETUP | grep 5;
+    if cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep "UNSAT";
+    then
+        sed -i "s|solution|1|g" result_INSTANCE_SETUP.csv;
+    elif cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep "OPTIMUM";
     then 
-        printf "2/" >> result_INSTANCE_SETUP.csv;
-        cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | sed -n -e 's/^.*o //p' >> result_INSTANCE_SETUP.csv;
-        printf "," >> result_INSTANCE_SETUP.csv;
-
-    # Clasp
-    else 
-        printf "2/" >> result_INSTANCE_SETUP.csv;
-        cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+' >> result_INSTANCE_SETUP.csv;
-        printf "," >> result_INSTANCE_SETUP.csv;
-    fi
-elif cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep "SAT";
-then 
-    # check if it's a suboptimal solution or just a decision
-
-    # Roundingsat
-    if echo SETUP | grep 2 || echo SETUP | grep 3 || echo SETUP | grep 4 || echo SETUP | grep 5;
-    then 
-        if cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep 'bounds'    ;
+        # Roundingsat
+        if echo SETUP | grep 2 || echo SETUP | grep 3 || echo SETUP | grep 4 || echo SETUP | grep 5;
         then 
-            printf "3/" >> result_INSTANCE_SETUP.csv;
-            cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | sed -n -e 's/^.*c bounds //p' | tail -1 | tr -d " "  >> result_INSTANCE_SETUP.csv;
-            printf "," >> result_INSTANCE_SETUP.csv;
+            opt=$(cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep -oP '(?<=o )[0-9]+');
+            sed -i 's|solution|2\/'"$opt"'|g' result_INSTANCE_SETUP.csv;
+        # Clasp
         else 
-            printf "3," >> result_INSTANCE_SETUP.csv;
+            opt=$(cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+');
+            sed -i 's|solution|2\/'"$opt"'|g' result_INSTANCE_SETUP.csv;
         fi
-
-    # Clasp
+    elif cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep "SAT";
+    then 
+        sed -i "s|solution|3|g" result_INSTANCE_SETUP.csv;
+    elif cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep "UNKNOWN";
+    then
+        sed -i "s|solution|4|g" result_INSTANCE_SETUP.csv;
     else 
-        if cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+';
-        then 
-            printf "3/" >> result_INSTANCE_SETUP.csv;
-            cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization : )\w+' >> result_INSTANCE_SETUP.csv;
-            printf "," >> result_INSTANCE_SETUP.csv;
-        else
-            printf "3," >> result_INSTANCE_SETUP.csv;
-        fi
-    fi 
-elif cat "$TMPDIR"/solver_INSTANCE_SETUP.txt | grep "UNKNOWN";
-then
-    printf "4," >> result_INSTANCE_SETUP.csv
-else 
-    printf "5," >> result_INSTANCE_SETUP.csv
+        sed -i "s|solution|6|g" result_INSTANCE_SETUP.csv;
+    fi
+# STOPPED
+elif cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep 'bounds' || cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization: )\w+';
+then 
+    if echo SETUP | grep 2 || echo SETUP | grep 3 || echo SETUP | grep 4 || echo SETUP | grep 5;
+    then 
+        opt=$(cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep -oP '(?<=c bounds ).*(?=>=)' | tail -1 | tr -d " ")
+        sed -i 's|solution|3\/'"$opt"'|g' result_INSTANCE_SETUP.csv;
+    else
+        opt=$(cat "$TMPDIR"/out_INSTANCE_SETUP.txt | grep -oiP '(?<=Optimization: )\w+' | tail -1);
+        sed -i 's|solution|3\/'"$opt"'|g' result_INSTANCE_SETUP.csv;
+    fi
+else sed -i "s|solution|5|g" result_INSTANCE_SETUP.csv;
 fi
 
-# remove newlines
-perl -p -i -e 's/\R//g;' result_INSTANCE_SETUP.csv;
-
 # remove temp files
-lslsrm "$TMPDIR"/solver_INSTANCE_SETUP.txt
+rm "$TMPDIR"/out_INSTANCE_SETUP.txt
+rm "$TMPDIR"/run_INSTANCE_SETUP.txt
