@@ -32,9 +32,9 @@ class Translator {
     private:
 
     // Utility
-    void read_literals(int array[], int amount, istringstream &iss, bool is_weight = false);
+    void read_literals(int array[], int amount, istringstream &iss, bool count = true);
     void read_weights(int array[], int amount, istringstream &iss) {
-        read_literals(array, amount, iss, true);
+        read_literals(array, amount, iss, false);
     };
     void add_sat(int rule[], int amount);
     void add_single(int name, int weight, bool sign, stringstream &iss);
@@ -61,6 +61,7 @@ class Translator {
 
     // Symbol table
     map<int, string> symbol_table;
+    map<int, string> agg_variables_symbol_table;
 
     // Executor
     Executor *executor;
@@ -84,6 +85,10 @@ class Translator {
     // Symbol tables
     void translate_symbol_table();
 
+    // Aggregate variables
+    int amount_of_aggregate_variables = 0;
+    void add_aggregate_variables_rule();
+    
     // Call to lp2sat and merge
     void merge();
 };

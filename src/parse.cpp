@@ -33,7 +33,7 @@ void Parser::parse(string inputfile) {
 
         // Parse rules
         parse_rules(*in);
-
+        
         // Parse symbol table
         parse_symbol_table(*in);
 
@@ -126,6 +126,9 @@ void Parser::parse_rules(istream& in) {
         if(curr == CONSTRAINT) this->translator->translate_constraint(iss);
         else this->translator->translate_weight(iss);
     }
+
+    // Add aggregate rule (lp2sat hack)
+    this->translator->add_aggregate_variables_rule();
     return;
 }
 

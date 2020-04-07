@@ -12,6 +12,11 @@
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
 void Translator::merge() {
+/*
+   string line;
+    while(getline(this->to_lp2sat, line)) {
+        cout << line << endl;
+    }*/
 
     // Commands to execute
     char cmd_normal[] = "lp2normal";
@@ -96,14 +101,42 @@ void Translator::merge() {
     outputfile.close();
 }
 
+void Translator::add_aggregate_variables_rule() {
+
+    // Make new variable for head
+    int new_var = ++this->highest;
+    // Add it to normal symbol table
+    this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
+    
+    // Initialise rule
+    this->to_lp2sat << "1 " << new_var << " " << this->amount_of_aggregate_variables << " " << this->amount_of_aggregate_variables << " ";
+    
+    // Loop over aggregate variables and add them all as negatives to the rule
+    map<int, string>::iterator it;
+    int curr;
+
+    for ( it = this->agg_variables_symbol_table.begin(); it != this->agg_variables_symbol_table.end(); it++ ) {
+        this->to_lp2sat << it->first << " ";
+    }
+    // End the rule
+    this->to_lp2sat << "\n";
+
+    return;
+}
+
 void Translator::translate_symbol_table() {
 
     // Iterator
     map<int, string>::iterator it;
 
-    // Add all symbols
+    // Add all normal symbols
     for ( it = this->symbol_table.begin(); it != this->symbol_table.end(); it++ ) {
-        to_lp2sat << it->first << " " << it->second << "\n";
+        this->to_lp2sat << it->first << " " << it->second << "\n";
+    }
+
+    // Add all aggregate symbols
+    for ( it = this->agg_variables_symbol_table.begin(); it != this->agg_variables_symbol_table.end(); it++ ) {
+        this->to_lp2sat << it->first << " " << it->second << "\n";
     }
 }
 
@@ -149,6 +182,7 @@ void Translator::translate_constraint(istringstream &iss) {
     int new_var_rule[5] = { 1, head, 1, 0, new_var };
     int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
 
+    // New rules
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
     this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
@@ -197,6 +231,7 @@ void Translator::translate_weight(istringstream &iss) {
     int new_var_rule[5] = { 1, head, 1, 0, new_var };
     int new_choice_rule[5] = { 3, 1, new_var, 0, 0 };
 
+    // New rules
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
     this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
@@ -240,7 +275,7 @@ void Translator::translate_minimize(istringstream &iss) {
     // Read the arrays of positives and negatives + their weights
     int variables[literals];
     int weights[literals];
-    read_literals(variables, literals, iss);
+    read_literals(variables, literals, iss, false);
     read_weights(weights, literals, iss);
 
     // Check if it is the first one --> calculate initial penalty if so
@@ -278,10 +313,13 @@ void Translator::translate_minimize(istringstream &iss) {
 //-----------------------------------------------------------------------------
 //                                  UTILITY
 //-----------------------------------------------------------------------------
-void Translator::read_literals(int array[], int amount, istringstream &iss, bool is_weight) {
+void Translator::read_literals(int array[], int amount, istringstream &iss, bool count) {
     for(int i = 0; i < amount; i++) {
         iss>>array[i];
-        if(!is_weight && this->symbol_table.count(array[i]) == 0) this->symbol_table[array[i]] = "lptopb(" + to_string(array[i]) + ")";
+        if(count && this->agg_variables_symbol_table.count(array[i]) == 0) {
+            this->agg_variables_symbol_table[array[i]] = "lptopb(" + to_string(array[i]) + ")";
+            this->amount_of_aggregate_variables++;
+        }
     }
 }
 
