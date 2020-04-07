@@ -68,32 +68,38 @@ void Parser::parse_rules(istream& in) {
 
         if(curr < 0 || curr > 6) throw invalid_ruletype_exception();
         else if(curr == ZERO_RULE) break;
-        else if(curr == MINIMIZE) this->translator->translate_minimize(iss);
         // Translate basic, choice and minimize rules immediately + GET HIGHEST
-        else if(curr == BASIC || curr == CHOICE) {
+        else if(curr == BASIC) {
+            // head
+            iss>>curr;
+            this->translator->highest = max(curr, this->translator->highest);
+            // literals
+            iss>>curr;
+            // #negatives
+            skip(1, iss);
+            parse_max(curr, iss);
             this->translator->translate_sat(line);
-
-            if(curr == BASIC) {
-                // head
-                iss>>curr;
-                this->translator->highest = max(curr, this->translator->highest);
-                // literals
-                iss>>curr;
-                // #negatives
-                skip(1, iss);
-                parse_max(curr, iss);
-            } else {
-                // heads
-                iss>>curr;
-                parse_max(curr, iss);
-                // literals
-                iss>>curr;
-                // #negatives
-                skip(1, iss);
-                parse_max(curr, iss);
-            }
-        // Store the rest for later translation --> when highest variable number is known + GET HIGHEST
+        } else if(curr == CHOICE) {
+            // heads
+            iss>>curr;
+            parse_max(curr, iss);
+            // literals
+            iss>>curr;
+            // #negatives
+            skip(1, iss);
+            parse_max(curr, iss);
+            this->translator->translate_sat(line);
+        } else if(curr == MINIMIZE) {
+            // 0
+            skip(1, iss);
+            // literals
+            iss>>curr;
+            // #negatives
+            skip(1, iss);
+            parse_max(curr, iss);
+            this->translator->translate_minimize(line);
         } else { 
+        // Store the rest for later translation --> when highest variable number is known + GET HIGHEST
             temp << line << '\n';
 
             // head

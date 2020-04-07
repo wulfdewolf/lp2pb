@@ -12,11 +12,6 @@
 //                              RULE TRANSLATION
 //-----------------------------------------------------------------------------
 void Translator::merge() {
-/*
-   string line;
-    while(getline(this->to_lp2sat, line)) {
-        cout << line << endl;
-    }*/
 
     // Commands to execute
     char cmd_normal[] = "lp2normal";
@@ -185,6 +180,7 @@ void Translator::translate_constraint(istringstream &iss) {
     // New rules
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
+    this->symbol_table[head] = "lptopb(" + to_string(head) + ")";
     this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
 
     // -- constraints
@@ -234,6 +230,7 @@ void Translator::translate_weight(istringstream &iss) {
     // New rules
     add_sat(new_var_rule, 5);
     add_sat(new_choice_rule, 5);
+    this->symbol_table[head] = "lptopb(" + to_string(head) + ")";
     this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
 
 
@@ -261,11 +258,12 @@ void Translator::translate_weight(istringstream &iss) {
     return;
 }
 
-void Translator::translate_minimize(istringstream &iss) {
+void Translator::translate_minimize(string line) {
 
     /*
     *   Get rule data
     */ 
+    istringstream iss(line.substr(1, line.length()));
     int literals, negatives, positives;
     iss>>literals; // skip the zero
     iss>>literals;
@@ -275,7 +273,7 @@ void Translator::translate_minimize(istringstream &iss) {
     // Read the arrays of positives and negatives + their weights
     int variables[literals];
     int weights[literals];
-    read_literals(variables, literals, iss, false);
+    read_literals(variables, literals, iss);
     read_weights(weights, literals, iss);
 
     // Check if it is the first one --> calculate initial penalty if so

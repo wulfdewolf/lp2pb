@@ -77,7 +77,7 @@ class Translator {
     void translate_sat(string line);
     void translate_constraint(istringstream &iss);
     void translate_weight(istringstream &iss);
-    void translate_minimize(istringstream &iss);
+    void translate_minimize(string line);
 
     // Values
     void translate_value(int index, int sign);
