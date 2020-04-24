@@ -1,6 +1,7 @@
 #!/bin/bash
 
 mkdir instances
+rm instances.competition
 mv encoding.asp instances
 cat ./*instances.competition | while read F
 do

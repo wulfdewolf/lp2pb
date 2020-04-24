@@ -96,29 +96,6 @@ void Translator::merge() {
     outputfile.close();
 }
 
-void Translator::add_aggregate_variables_rule() {
-
-    // Make new variable for head
-    int new_var = ++this->highest;
-    // Add it to normal symbol table
-    this->symbol_table[new_var] = "lptopb(" + to_string(new_var) + ")";
-    
-    // Initialise rule
-    this->to_lp2sat << "1 " << new_var << " " << this->amount_of_aggregate_variables << " " << this->amount_of_aggregate_variables << " ";
-    
-    // Loop over aggregate variables and add them all as negatives to the rule
-    map<int, string>::iterator it;
-    int curr;
-
-    for ( it = this->agg_variables_symbol_table.begin(); it != this->agg_variables_symbol_table.end(); it++ ) {
-        this->to_lp2sat << it->first << " ";
-    }
-    // End the rule
-    this->to_lp2sat << "\n";
-
-    return;
-}
-
 void Translator::translate_symbol_table() {
 
     // Iterator
@@ -126,11 +103,6 @@ void Translator::translate_symbol_table() {
 
     // Add all normal symbols
     for ( it = this->symbol_table.begin(); it != this->symbol_table.end(); it++ ) {
-        this->to_lp2sat << it->first << " " << it->second << "\n";
-    }
-
-    // Add all aggregate symbols
-    for ( it = this->agg_variables_symbol_table.begin(); it != this->agg_variables_symbol_table.end(); it++ ) {
         this->to_lp2sat << it->first << " " << it->second << "\n";
     }
 }
@@ -314,9 +286,8 @@ void Translator::translate_minimize(string line) {
 void Translator::read_literals(int array[], int amount, istringstream &iss, bool count) {
     for(int i = 0; i < amount; i++) {
         iss>>array[i];
-        if(count && this->agg_variables_symbol_table.count(array[i]) == 0) {
-            this->agg_variables_symbol_table[array[i]] = "lptopb(" + to_string(array[i]) + ")";
-            this->amount_of_aggregate_variables++;
+        if(count && this->symbol_table.count(array[i]) == 0) {
+            this->symbol_table[array[i]] = "lptopb(" + to_string(array[i]) + ")";
         }
     }
 }

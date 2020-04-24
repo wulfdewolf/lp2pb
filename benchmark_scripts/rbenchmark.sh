@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #PBS -l nodes=1:ppn=1:ivybridge
-#PBS -l walltime=00:22:00
+#PBS -l walltime=00:25:00
 #PBS -l pmem=15gb
 
 cd $PBS_O_WORKDIR

@@ -8,6 +8,7 @@
 #include "include/util.h"
 #include <csignal>
 using namespace std;
+#define VERSION 1.0
 
 void signalHandler(int signum) {
    cout << "lp2pb: INTERRUPTED\n";
@@ -22,7 +23,9 @@ int main(int argc, char* argv[]) {
     // Usage
     string usage_message = "Usage: ./lp2pb <-i inputfile1> <-o outputfile>\n";
 
-    if(argc ==  5 || argc == 3 || argc == 1) {
+    if(argc == 2 && cmdOptionExists(argv+1,  argv+argc, "--version")) {
+        cout << "lp2pb v" << VERSION << "\n";
+    } else if(argc ==  5 || argc == 3 || argc == 1) {
 
         string inputfile = "pipe";
         Executor executor;

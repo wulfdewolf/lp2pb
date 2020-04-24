@@ -61,7 +61,6 @@ class Translator {
 
     // Symbol table
     map<int, string> symbol_table;
-    map<int, string> agg_variables_symbol_table;
 
     // Executor
     Executor *executor;
@@ -82,12 +81,8 @@ class Translator {
     // Values
     void translate_value(int index, int sign);
 
-    // Symbol tables
+    // Symbol table
     void translate_symbol_table();
-
-    // Aggregate variables
-    int amount_of_aggregate_variables = 0;
-    void add_aggregate_variables_rule();
     
     // Call to lp2sat and merge
     void merge();
