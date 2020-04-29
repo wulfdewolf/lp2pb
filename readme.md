@@ -15,7 +15,7 @@ make
 
 ### Executables
 
-This tool makes use of 3 other tools to translate its input; [lp2sat and lp2lp ](http://www.tcs.hut.fi/Software/lp2sat/), [lp2normal](https://research.ics.aalto.fi/software/asp/lp2normal/).  
+This tool makes use of 3 other tools to translate its input; [lp2sat, lp2lp ](http://www.tcs.hut.fi/Software/lp2sat/) and [lp2normal](https://research.ics.aalto.fi/software/asp/lp2normal/).  
 The executables for these should be in your PATH.  
 By calling:
 ```shell
