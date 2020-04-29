@@ -50,3 +50,5 @@ To run the application:
 Input and output files are optional, if not provided standard input and output is used.
 
 ### Citation
+
+B. Bogaerts and W. De Wulf *Pseudo-boolean Solvers for Answer Set Programming*. (in progress)
