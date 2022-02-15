@@ -51,4 +51,4 @@ Input and output files are optional, if not provided standard input and output i
 
 ### Citation
 
-B. Bogaerts and W. De Wulf. *LP2PB: Translating Answer Set Programs into Pseudo-Boolean Theories*
+W. De Wulf, B. Bogaerts. LP2PB: Translating Answer Set Programs into Pseudo-Boolean Theories. ICLP Technical Communications 2020: 206-219
